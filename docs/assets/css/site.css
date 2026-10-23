@@ -452,7 +452,8 @@ details p { color: var(--doux); margin-top: 10px; font-size: 15px; }
   .entete-in { gap: 16px; }
   .navigation {
     position: absolute; left: 0; right: 0; top: 76px; display: none; flex-direction: column; align-items: stretch; gap: 14px;
-    padding: 14px 20px 22px; background: rgba(10, 14, 28, .98); border-bottom: 1px solid var(--bord);
+    padding: 14px 20px 22px; background: var(--fond); border-bottom: 1px solid var(--bord);
+    box-shadow: 0 24px 40px -12px rgba(0, 0, 0, .7);
   }
   .entete.ouvert .navigation { display: flex; }
   .liens { flex-direction: column; gap: 2px; }
