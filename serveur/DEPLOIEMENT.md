@@ -16,6 +16,24 @@ dépannage sont dans le [README](README.md).
       *Edit zone DNS*, limité à la zone `mekhorizon.org`.
 - [ ] Un **compte Microsoft dédié** au serveur (pas le tien), pour la méthode « Ami » des consoles.
 
+## Et les consoles ?
+
+Rien à installer sur les consoles (elles ne le permettent pas) : tout se passe sur le
+serveur, et `deploy.sh` le met en place tout seul :
+
+- **Geyser** traduit Bedrock en Java, et **Floodgate** laisse entrer les joueurs qui n'ont
+  qu'un compte Microsoft (pas de Minecraft Java) ;
+- **NetherNet**, le nouveau protocole Bedrock du 27 octobre, est activé (avec HTTPS) ;
+- **MCXboxBroadcast** fait apparaître le serveur dans l'onglet **Amis** des consoles.
+
+Ce qui reste à faire à la main pour les consoles : créer le compte Microsoft du serveur
+(étape 5), ajouter les joueurs console à la liste blanche avec le point (étape 6) et
+tester sur chaque console (étape 7).
+
+La méthode DNS (BedrockConnect) n'est volontairement pas installée : elle passe par des
+serveurs DNS tiers et n'a pas encore de version compatible NetherNet, donc elle risque
+de ne plus marcher le 27 octobre.
+
 ## 1. Récupérer le projet
 
 ```bash
@@ -69,7 +87,11 @@ Vérifie que l'IP WAN affichée par le routeur est la même que celle que donne
 `curl -4 ifconfig.me`. Si le routeur affiche 100.64.x.x ou 10.x.x.x, ton FAI te met
 derrière un CGNAT et les redirections ne marcheront pas.
 
-## 5. Connecter le compte Xbox du serveur
+## 5. Connecter le compte Xbox du serveur (consoles)
+
+Crée d'abord le compte sur https://www.xbox.com : un compte **adulte** (un compte enfant
+a des restrictions qui bloquent les amis et le multijoueur), avec un gamertag qui
+ressemble au serveur.
 
 ```bash
 ./outils.sh xbox
@@ -97,6 +119,7 @@ Mets ensuite son gamertag dans `gamertag: ''` en haut du script de `docs/index.h
 - [ ] **PC** : launcher depuis https://qcsmp.mekhorizon.org → Jouer → tu arrives au spawn.
 - [ ] **Téléphone** : Serveurs → Ajouter → `mc.qcsmp.mekhorizon.org`, port `19132`.
 - [ ] **Console** : ajoute le compte du serveur en ami → onglet Amis → Rejoindre.
+      Teste aussi avec un **compte enfant** si des jeunes jouent sur console (voir le site).
 - [ ] **Après le 27 octobre** (Bedrock 26.60 / NetherNet) : refais les tests console sur
       Xbox, PlayStation et Switch avant de publier le guide joueurs.
 
