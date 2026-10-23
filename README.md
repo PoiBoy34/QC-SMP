@@ -97,9 +97,10 @@ faut pour comprendre le problème. Colle-le sur le Discord.
 | `modpacks/LQDM/mods/` (et `datapacks/`, `shaderpacks/`, `resourcepacks/`) | Fichiers déposés à la main (ex. le resource pack du serveur) |
 | `modpacks/LQDM/modrinth.lock.json` | Versions exactes choisies sur Modrinth (généré) |
 | `modpacks/LQDM/*manifest.json`, `servers.dat` | Ce que télécharge le launcher (généré) |
-| `outils/` | `modrinth.py` (résout les listes) et `manifests.py` (génère les manifests) |
+| `contenu/` | Items custom, menus du menu Échap et commandes du réseau, pour Java et Bedrock : voir [contenu/README.md](contenu/README.md) |
+| `outils/` | `modrinth.py` (résout les listes), `contenu.py` (génère le contenu custom) et `manifests.py` (génère les manifests) |
 | `update_manifest.sh` | Régénère les manifests |
-| `publish.sh` | Listes + manifests + commit + push, en une commande |
+| `publish.sh` | Listes + contenu + manifests + commit + push, en une commande |
 | `minecraft-launcher/` | Code du launcher (Electron), basé sur TimeRift-Launcher 2.1.3 |
 | `docs/` | Site de téléchargement (https://qcsmp.mekhorizon.org), publié par GitHub Pages |
 | `serveur/` | Déploiement du serveur sur Proxmox (Ansible, Docker, Velocity + Geyser) : voir le [mini guide de déploiement](serveur/DEPLOIEMENT.md) |

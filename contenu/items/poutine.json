@@ -1,0 +1,6 @@
+{
+  "nom": "Poutine",
+  "description": ["Frites, fromage en grains et sauce brune.", "Le vrai repas du Québec."],
+  "nourriture": { "faim": 8, "saturation": 12.8 },
+  "pile_max": 16
+}

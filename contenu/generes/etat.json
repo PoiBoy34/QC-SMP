@@ -1,0 +1,15 @@
+{
+  "minecraft": "26.3",
+  "formats": {
+    "ressources": [
+      97,
+      0
+    ],
+    "donnees": [
+      121,
+      0
+    ]
+  },
+  "empreinte": "36dc06e09da1da85a968fb926e2dfc7243b30e1f",
+  "version_bedrock": 2
+}

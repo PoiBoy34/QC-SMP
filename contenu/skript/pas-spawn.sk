@@ -1,0 +1,7 @@
+# Tous les serveurs sauf le spawn : /spawn renvoie au serveur spawn.
+
+command /spawn:
+	aliases: hub, lobby
+	description: Retour au spawn
+	trigger:
+		connect player to proxy server "spawn"

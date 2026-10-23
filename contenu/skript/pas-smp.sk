@@ -1,0 +1,9 @@
+# Tous les serveurs sauf le SMP : les commandes de survie (HuskHomes, sur le SMP)
+# emmènent le joueur sur le SMP au lieu de répondre « commande inconnue ».
+
+command /rtp [<text>]:
+	aliases: home, homes, sethome, delhome, tpa, tpahere, tpaccept, tpdeny, back
+	description: Commande du SMP
+	trigger:
+		send "&9[LQDM] &fÇa se passe sur le SMP : on t'y emmène ! Refais la commande une fois arrivé."
+		connect player to proxy server "smp"

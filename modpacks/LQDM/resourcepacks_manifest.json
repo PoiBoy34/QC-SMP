@@ -1,4 +1,10 @@
 {
   "version": "1.0.0",
-  "files": []
+  "files": [
+    {
+      "name": "LQDM-Contenu.zip",
+      "url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks/LQDM-Contenu.zip",
+      "sha1": "0699aa9881fb54781cdcfb8a8877ddb28257644e"
+    }
+  ]
 }

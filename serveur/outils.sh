@@ -21,6 +21,7 @@ Usage : ./outils.sh <commande>
   cmd <serveur> "<cmd>"    une seule commande, ex. : ./outils.sh cmd smp "say Salut"
   whitelist <pseudo>       autorise un joueur sur tout le réseau
                            Java : JosephMC     Bedrock : .Gamertag (avec le point de Floodgate)
+  donner <joueur> <item> [n]  donne un item custom de contenu/items (ex. poutine)
   nethernet                état NetherNet de Geyser (adresses annoncées, signalisation)
   xbox                     dernier code de connexion du compte Xbox (MCXboxBroadcast)
   redemarrer [serveur]     redémarre un serveur, ou tout le réseau sans argument
@@ -53,6 +54,18 @@ case "${1:-}" in
     # Liste partagée : les autres serveurs la relisent
     for s in $(paper); do [[ $s == spawn ]] || cmd "$s" "whitelist reload" >/dev/null; done
     ok "$pseudo autorisé sur tout le réseau" ;;
+  donner)
+    joueur="${2:?joueur ?}"; objet="${3:?item ? (voir contenu/items)}"; quantite="${4:-1}"
+    commande=$(python3 -c '
+import json, sys
+items = json.load(open(sys.argv[1], encoding="utf-8"))
+if sys.argv[2] not in items:
+    sys.exit("item inconnu, au choix : " + ", ".join(sorted(items)))
+print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "$objet") || exit 1
+    commande="${commande/<joueur>/$joueur}"; commande="${commande/<quantite>/$quantite}"
+    # Le joueur n'est que sur un serveur : on tente partout, un seul répondra « Gave ».
+    for s in $(paper); do cmd "$s" "$commande" | grep -i "gave\|donné" && exit 0; done
+    erreur "$joueur n'est connecté sur aucun serveur Paper" ;;
   nethernet)
     cmd proxy "geyser nethernet status"
     cmd proxy "geyser nethernet advertised" ;;

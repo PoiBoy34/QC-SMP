@@ -44,6 +44,8 @@
     - proxy/plugins
     - proxy/plugins/Geyser-Velocity
     - proxy/plugins/Geyser-Velocity/extensions
+    - proxy/plugins/Geyser-Velocity/packs
+    - proxy/plugins/Geyser-Velocity/custom_mappings
 
 - name: Dossier de la base de données (géré par l'image MariaDB)
   ansible.builtin.file:
@@ -58,7 +60,9 @@
     owner: "{{ uid_mc }}"
     group: "{{ uid_mc }}"
     mode: "0750"
-  loop: "{{ serveurs_paper | product(['', '/config', '/plugins', '/plugins/floodgate']) | list }}"
+  loop: >-
+    {{ serveurs_paper | product(['', '/config', '/plugins', '/plugins/floodgate', '/plugins/Skript',
+                                 '/plugins/Skript/scripts', '/world', '/world/datapacks']) | list }}
   loop_control:
     label: "{{ item.0.nom }}{{ item.1 }}"
 
@@ -172,14 +176,14 @@
     group: "{{ uid_mc }}"
     mode: "0644"
 
-- name: Skript pour les mini-jeux — dernière version (GitHub)
+# Skript sur tous les serveurs : commandes du réseau (/menu, /spawn…) et mini-jeux.
+- name: Skript — dernière version (GitHub)
   ansible.builtin.uri:
     url: https://api.github.com/repos/SkriptLang/Skript/releases/latest
     return_content: true
   register: skript_release
-  when: minijeux | length > 0
 
-- name: Skript pour les mini-jeux — téléchargement
+- name: Skript — téléchargement
   ansible.builtin.get_url:
     url: >-
       {{ skript_release.json.assets | selectattr('name', 'match', '^Skript.*[.]jar$')
@@ -188,9 +192,106 @@
     owner: "{{ uid_mc }}"
     group: "{{ uid_mc }}"
     mode: "0644"
-  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'minijeu') }}"
+  loop: "{{ serveurs_paper }}"
   loop_control:
     label: "{{ item.nom }}"
+
+- name: HuskHomes (SMP) — dossier de config
+  ansible.builtin.file:
+    path: "{{ base }}/serveurs/smp/plugins/HuskHomes"
+    state: directory
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0750"
+
+# Fichier partiel : HuskHomes ajoute toutes les autres options à son premier démarrage.
+- name: HuskHomes (SMP) — français, /spawn laissé au réseau, RTP dans la bordure du monde
+  ansible.builtin.copy:
+    dest: "{{ base }}/serveurs/smp/plugins/HuskHomes/config.yml"
+    force: false
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+    content: |
+      language: fr-fr
+      check_for_updates: false
+      # /spawn renvoie au serveur spawn (contenu/skript/pas-spawn.sk)
+      disabled_commands:
+        - /spawn
+        - /setspawn
+      rtp:
+        region:
+          min: 300
+          max: 2800
+
+# --- Contenu du dépôt : menus, commandes et items (dossier contenu/) ------------
+- name: Contenu — datapack des menus (bouton du menu Échap, /menu)
+  ansible.builtin.copy:
+    src: "{{ item.1 }}"
+    dest: "{{ base }}/serveurs/{{ item.0.nom }}/world/datapacks/"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  loop: "{{ serveurs_paper | product(query('ansible.builtin.fileglob', playbook_dir ~ '/../contenu/generes/datapack/*.zip')) | list }}"
+  loop_control:
+    label: "{{ item.0.nom }}"
+  register: contenu_datapack
+
+- name: Contenu — scripts à installer selon le serveur
+  ansible.builtin.set_fact:
+    scripts_lqdm: >-
+      {{ scripts_lqdm | default([])
+         + [[item.nom, 'tous.sk'], [item.nom, 'spawn.sk' if item.type == 'spawn' else 'pas-spawn.sk']]
+         + ([[item.nom, 'pas-smp.sk']] if item.type != 'smp' else []) }}
+  loop: "{{ serveurs_paper }}"
+  loop_control:
+    label: "{{ item.nom }}"
+
+- name: Contenu — commandes Skript du réseau
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../contenu/skript/{{ item.1 }}"
+    dest: "{{ base }}/serveurs/{{ item.0 }}/plugins/Skript/scripts/lqdm-{{ item.1 }}"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  loop: "{{ scripts_lqdm }}"
+  loop_control:
+    label: "{{ item.0 }} : {{ item.1 }}"
+  register: contenu_scripts
+
+- name: Contenu — fonction Skript des items custom
+  ansible.builtin.copy:
+    src: "{{ item.1 }}"
+    dest: "{{ base }}/serveurs/{{ item.0.nom }}/plugins/Skript/scripts/"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  loop: "{{ serveurs_paper | product(query('ansible.builtin.fileglob', playbook_dir ~ '/../contenu/generes/*.sk')) | list }}"
+  loop_control:
+    label: "{{ item.0.nom }}"
+  register: contenu_items_sk
+
+- name: Contenu — pack Bedrock des items, envoyé par Geyser
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ base }}/proxy/plugins/Geyser-Velocity/packs/"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  with_fileglob:
+    - "{{ playbook_dir }}/../contenu/generes/bedrock/*.mcpack"
+  notify: redemarrer proxy
+
+- name: Contenu — mappings Geyser (items Java → vrais items Bedrock)
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ base }}/proxy/plugins/Geyser-Velocity/custom_mappings/"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  with_fileglob:
+    - "{{ playbook_dir }}/../contenu/generes/geyser/*.json"
+  notify: redemarrer proxy
 
 - name: MCXboxBroadcast — extension Geyser (onglet Amis des consoles)
   ansible.builtin.get_url:
@@ -233,6 +334,23 @@
     chdir: "{{ base }}"
   register: compose_up
   changed_when: compose_up.stderr is search('Created|Recreated|Started')
+
+# Les menus (dialogs) se chargent au démarrage du serveur ; les scripts, à chaud.
+- name: Contenu — redémarrer les serveurs dont les menus ont changé
+  ansible.builtin.command: docker compose restart {{ item }}
+  args:
+    chdir: "{{ base }}"
+  loop: "{{ contenu_datapack.results | selectattr('changed') | map(attribute='item.0.nom') | unique }}"
+  changed_when: true
+
+- name: Contenu — recharger les scripts modifiés
+  ansible.builtin.command: docker exec mc-{{ item }} rcon-cli "sk reload all"
+  loop: >-
+    {{ ((contenu_scripts.results | selectattr('changed') | map(attribute='item.0') | list)
+        + (contenu_items_sk.results | selectattr('changed') | map(attribute='item.0.nom') | list))
+       | difference(contenu_datapack.results | selectattr('changed') | map(attribute='item.0.nom') | list) | unique }}
+  changed_when: true
+  failed_when: false      # au tout premier démarrage le serveur n'est pas encore prêt : il lira les scripts tout seul
 
 # --- Réglages qui n'existent qu'après le premier démarrage ----------------------
 - name: Attendre que Floodgate ait généré sa config et sa clé (1er démarrage = plusieurs minutes)

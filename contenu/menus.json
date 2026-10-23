@@ -1,0 +1,127 @@
+{
+  "menu": {
+    "titre": "LQDM",
+    "texte": "Que veux-tu faire ?",
+    "colonnes": 2,
+    "boutons": [
+      {
+        "texte": "Spawn",
+        "icone": "nether_star",
+        "commande": "spawn",
+        "info": "Retour au spawn"
+      },
+      {
+        "texte": "Survie (SMP)",
+        "icone": "iron_pickaxe",
+        "commande": "smp",
+        "info": "Aller sur le serveur de survie"
+      },
+      {
+        "texte": "Mini-jeux",
+        "icone": "firework_rocket",
+        "menu": "jeux"
+      },
+      {
+        "texte": "Téléportation aléatoire",
+        "icone": "ender_pearl",
+        "commande": "rtp",
+        "info": "Un endroit au hasard dans le SMP"
+      },
+      {
+        "texte": "Homes",
+        "icone": "oak_door",
+        "menu": "homes"
+      },
+      {
+        "texte": "Rejoindre un ami",
+        "icone": "lead",
+        "menu": "tpa"
+      },
+      {
+        "texte": "Règles",
+        "icone": "book",
+        "menu": "regles"
+      },
+      {
+        "texte": "Discord",
+        "icone": "writable_book",
+        "lien": "https://discord.gg/EQyXcrG2hA",
+        "info": "Le Discord du serveur"
+      },
+      {
+        "texte": "Site du serveur",
+        "icone": "map",
+        "lien": "https://qcsmp.mekhorizon.org"
+      }
+    ]
+  },
+  "homes": {
+    "titre": "Homes",
+    "texte": "Tes points de retour sur le SMP.",
+    "boutons": [
+      {
+        "texte": "Mes homes",
+        "icone": "oak_door",
+        "commande": "homes"
+      },
+      {
+        "texte": "Créer un home ici",
+        "icone": "name_tag",
+        "commande": "sethome"
+      },
+      {
+        "texte": "Retour à ma dernière position",
+        "icone": "ender_eye",
+        "commande": "back"
+      }
+    ]
+  },
+  "tpa": {
+    "titre": "Rejoindre un ami",
+    "texte": "Sur le SMP : ton ami doit accepter la demande.",
+    "boutons": [
+      {
+        "texte": "Aller chez un ami",
+        "icone": "lead",
+        "suggerer": "tpa ",
+        "info": "Écris son pseudo puis Entrée"
+      },
+      {
+        "texte": "Faire venir un ami",
+        "icone": "lead",
+        "suggerer": "tpahere ",
+        "info": "Écris son pseudo puis Entrée"
+      },
+      {
+        "texte": "Accepter une demande",
+        "icone": "emerald",
+        "commande": "tpaccept"
+      },
+      {
+        "texte": "Refuser une demande",
+        "icone": "redstone",
+        "commande": "tpdeny"
+      }
+    ]
+  },
+  "jeux": {
+    "titre": "Mini-jeux",
+    "texte": "Choisis un mini-jeu.",
+    "boutons": [
+      {
+        "texte": "Mini-jeu 1",
+        "icone": "firework_rocket",
+        "commande": "server minijeu1"
+      }
+    ]
+  },
+  "regles": {
+    "titre": "Règles",
+    "texte": [
+      "1. Respecte tout le monde, dans le jeu comme sur Discord.",
+      "2. Pas de grief, pas de vol.",
+      "3. Pas de triche ni de mods qui donnent un avantage.",
+      "4. Les admins ont le dernier mot."
+    ]
+  }
+}

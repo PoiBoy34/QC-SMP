@@ -1,0 +1,26 @@
+# Commandes du réseau LQDM, sur tous les serveurs Paper (installé par serveur/deploy.sh).
+# Le contenu des menus est décrit dans contenu/menus.json.
+
+command /menu:
+	aliases: m
+	description: Ouvre le menu du serveur
+	trigger:
+		execute console command "dialog show %uuid of player% lqdm:menu"
+
+command /rules:
+	aliases: regles
+	description: Les règles du serveur
+	trigger:
+		execute console command "dialog show %uuid of player% lqdm:regles"
+
+command /games:
+	aliases: jeux
+	description: Les mini-jeux
+	trigger:
+		execute console command "dialog show %uuid of player% lqdm:jeux"
+
+command /smp:
+	aliases: survie
+	description: Aller sur le serveur de survie
+	trigger:
+		connect player to proxy server "smp"

@@ -1,0 +1,49 @@
+{
+  "format_version": 2,
+  "items": {
+    "minecraft:stick": [
+      {
+        "type": "definition",
+        "bedrock_identifier": "lqdm:baton_magique",
+        "model": "lqdm:baton_magique",
+        "display_name": "Bâton magique",
+        "bedrock_options": {
+          "icon": "lqdm_baton_magique",
+          "allow_offhand": true,
+          "display_handheld": true,
+          "creative_category": "items"
+        },
+        "components": {
+          "minecraft:max_stack_size": 1,
+          "minecraft:enchantment_glint_override": true
+        }
+      }
+    ],
+    "minecraft:paper": [
+      {
+        "type": "definition",
+        "bedrock_identifier": "lqdm:poutine",
+        "model": "lqdm:poutine",
+        "display_name": "Poutine",
+        "bedrock_options": {
+          "icon": "lqdm_poutine",
+          "allow_offhand": true,
+          "display_handheld": false,
+          "creative_category": "items"
+        },
+        "components": {
+          "minecraft:max_stack_size": 16,
+          "minecraft:food": {
+            "nutrition": 8,
+            "saturation": 12.8,
+            "can_always_eat": false
+          },
+          "minecraft:consumable": {
+            "consume_seconds": 1.6,
+            "animation": "eat"
+          }
+        }
+      }
+    ]
+  }
+}

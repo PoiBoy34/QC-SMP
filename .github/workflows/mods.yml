@@ -1,9 +1,11 @@
-name: Mods
+name: Mods et contenu
 
 # Dès que mods.txt, shaders.txt ou resourcepacks.txt change (même modifié directement
-# sur github.com), ou qu'un fichier est déposé dans modpacks/ : résout les listes sur
-# Modrinth, régénère les manifests et les pousse. Les joueurs reçoivent le changement
-# au lancement suivant.
+# sur github.com), qu'un fichier est déposé dans modpacks/, ou que contenu/ change
+# (items, menus) : résout les listes sur Modrinth, génère le contenu custom (packs Java
+# et Bedrock, mappings Geyser, menus), régénère les manifests et pousse le tout.
+# Les joueurs Java reçoivent le changement au lancement suivant ; le serveur, au
+# prochain ./deploy.sh --tags serveur.
 # À la main (onglet Actions → Mods → Run workflow) : mise à jour de tous les mods,
 # ou changement de version de Minecraft.
 on:
@@ -11,6 +13,7 @@ on:
     branches: [main]
     paths:
       - 'modpacks/**'
+      - 'contenu/**'
       - 'catalog.json'
       - 'outils/**'
   workflow_dispatch:
@@ -49,6 +52,9 @@ jobs:
           [ -n "$MINECRAFT" ] && options+=(--minecraft "$MINECRAFT")
           python3 outils/modrinth.py "${options[@]}"
 
+      - name: Générer le contenu custom (items, menus)
+        run: python3 outils/contenu.py
+
       - name: Régénérer les manifests
         run: ./update_manifest.sh
 
@@ -56,11 +62,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A catalog.json modpacks/
+          git add -A catalog.json modpacks/ contenu/generes/
           if git diff --staged --quiet; then
             echo "Rien à changer."
             exit 0
           fi
-          git commit -m "auto : mods et manifests"
+          git commit -m "auto : mods, contenu et manifests"
           git pull --rebase
           git push

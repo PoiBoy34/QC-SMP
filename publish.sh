@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ===========================================================================
 # publish.sh — à lancer après avoir modifié mods.txt / shaders.txt / resourcepacks.txt,
-# ou ajouté / retiré des fichiers dans modpacks/<pack>/mods (datapacks, shaderpacks,
-# resourcepacks).
+# ajouté / retiré des fichiers dans modpacks/<pack>/mods (datapacks, shaderpacks,
+# resourcepacks), ou modifié contenu/ (items, menus).
 #
 #     ./publish.sh                           message de commit par défaut
 #     ./publish.sh "ajout de Xaero"          message personnalisé
@@ -37,6 +37,7 @@ if [ -n "$BIG" ]; then
 fi
 
 python3 outils/modrinth.py ${OPTIONS[@]+"${OPTIONS[@]}"}
+python3 outils/contenu.py
 ./update_manifest.sh
 
 if [ -z "$(git status --porcelain)" ]; then

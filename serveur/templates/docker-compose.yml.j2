@@ -105,6 +105,12 @@ services:
       OPS: "{{ admins_java | join(',') }}"
 {% endif %}
       PLUGINS: {{ url_floodgate_paper }}
+{% if url_pack_contenu %}
+      # Textures des items custom pour les joueurs Java sans le launcher (le launcher l'installe
+      # déjà et l'accepte d'office). Sans SHA1 : toujours la dernière version poussée sur GitHub.
+      RESOURCE_PACK: "{{ url_pack_contenu }}"
+      RESOURCE_PACK_ENFORCE: "FALSE"
+{% endif %}
       MODRINTH_PROJECTS: "{{ modrinth_par_type[s.type] }}"
       LUCKPERMS_SERVER: {{ s.nom }}
       LUCKPERMS_STORAGE_METHOD: mariadb

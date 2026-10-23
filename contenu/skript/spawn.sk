@@ -1,0 +1,25 @@
+# Serveur spawn seulement : /spawn ramène au point de spawn, et la boussole ouvre le menu
+# (pratique sur console, où taper une commande est pénible).
+
+command /spawn:
+	aliases: hub, lobby
+	description: Retour au spawn
+	trigger:
+		teleport player to spawn of world "world"
+
+on join:
+	wait 1 tick
+	set slot 4 of player's inventory to compass named "&9&lMenu LQDM &7(clic droit)"
+
+on right click:
+	uncolored name of player's tool is "Menu LQDM (clic droit)"
+	cancel event
+	make player execute command "menu"
+
+on drop:
+	uncolored name of event-item is "Menu LQDM (clic droit)"
+	cancel event
+
+on inventory click:
+	uncolored name of event-item is "Menu LQDM (clic droit)"
+	cancel event

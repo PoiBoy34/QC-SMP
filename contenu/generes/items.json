@@ -1,0 +1,10 @@
+{
+  "baton_magique": {
+    "nom": "Bâton magique",
+    "commande": "give <joueur> minecraft:stick[item_model=\"lqdm:baton_magique\",item_name=\"Bâton magique\",lore=[{text:\"Réservé aux événements du serveur.\",italic:false,color:\"gray\"}],enchantment_glint_override=true,max_stack_size=1] <quantite>"
+  },
+  "poutine": {
+    "nom": "Poutine",
+    "commande": "give <joueur> minecraft:paper[item_model=\"lqdm:poutine\",item_name=\"Poutine\",lore=[{text:\"Frites, fromage en grains et sauce brune.\",italic:false,color:\"gray\"},{text:\"Le vrai repas du Québec.\",italic:false,color:\"gray\"}],max_stack_size=16,food={nutrition:8,saturation:12.8f,can_always_eat:false},consumable={consume_seconds:1.6f,animation:\"eat\"}] <quantite>"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "nom": "Bâton magique",
+  "base": "minecraft:stick",
+  "type": "outil",
+  "description": ["Réservé aux événements du serveur."],
+  "brillant": true,
+  "pile_max": 1
+}

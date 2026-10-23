@@ -23,9 +23,13 @@ url_floodgate_velocity: https://download.geysermc.org/v2/projects/floodgate/vers
 url_floodgate_paper: https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
 url_mcxboxbroadcast: https://github.com/MCXboxBroadcast/Broadcaster/releases/latest/download/MCXboxBroadcastExtension.jar
 
+# Textures des items custom (contenu/), proposées aux joueurs Java qui n'ont pas le launcher.
+# Vide = désactivé.
+url_pack_contenu: https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks/LQDM-Contenu.zip
+
 # Plugins Paper par type de serveur (Modrinth). Le « ? » rend le plugin optionnel :
 # s'il n'existe pas encore pour la version de Minecraft, le serveur démarre quand même.
 modrinth_par_type:
   spawn: "luckperms?,fancynpcs?,fastasyncworldedit?,viaversion?"
-  smp: "luckperms?,coreprotect?,viaversion?,chunky?"   # chunky : pré-génération du monde
+  smp: "luckperms?,coreprotect?,viaversion?,chunky?,huskhomes?"   # chunky : pré-génération ; huskhomes : homes, /tpa, /rtp, /back
   minijeu: "luckperms?,skbee?,viaversion?"
