@@ -68,13 +68,15 @@ Object.assign(console, log.functions); // console.log/error → fichier + termin
 // Tampon circulaire de la sortie Minecraft (pour le rapport, sans relire le disque)
 const MC_BUFFER_MAX = 400;
 const mcOutputBuffer = [];
+// Le token Microsoft ne doit jamais atterrir dans un journal ni dans un rapport partagé
+// (MCLC écrit toute la ligne de commande du jeu dans ses messages de debug).
+function masquerSecrets(texte) {
+    return String(texte)
+        .replace(/(--(?:accessToken|uuid|xuid|clientId)\s+)\S+/g, '$1***')
+        .replace(/eyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]+/g, '***');
+}
 function pushMcLine(line) {
-    // Le token Microsoft ne doit jamais atterrir dans un rapport partagé.
-    const clean = String(line).trimEnd()
-        .replace(/(--accessToken\s+)\S+/g, '$1***')
-        .replace(/(--uuid\s+)\S+/g, '$1***')
-        .replace(/(--xuid\s+)\S+/g, '$1***')
-        .replace(/(--clientId\s+)\S+/g, '$1***');
+    const clean = masquerSecrets(line).trimEnd();
     if (!clean) return;
     mcOutputBuffer.push(clean);
     if (mcOutputBuffer.length > MC_BUFFER_MAX) mcOutputBuffer.shift();
@@ -225,7 +227,7 @@ autoUpdater.on('error', (err) => {
     sendToWindow('update-error', msg);
 });
 
-launcher.on('debug', (e) => { log.info('[MC]', e); pushMcLine('[debug] ' + e); });
+launcher.on('debug', (e) => { log.info('[MC]', masquerSecrets(e)); pushMcLine('[debug] ' + e); });
 launcher.on('data',  (e) => { pushMcLine(e); detectGameStarted(e); });
 launcher.on('close', (code) => {
     const durationMs = gameStartTime ? Date.now() - gameStartTime : 0;
@@ -630,7 +632,8 @@ async function buildDiagnosticReport(packData) {
     }
 
     lines.push('===== FIN DU RAPPORT =====');
-    return lines.join('\n');
+    // Les journaux d'avant la 1.0.2 peuvent encore contenir le token en clair.
+    return masquerSecrets(lines.join('\n'));
 }
 
 ipcMain.handle('get-diagnostics', async (event, packData) => {
