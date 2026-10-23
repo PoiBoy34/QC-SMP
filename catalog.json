@@ -2,7 +2,7 @@
   "modpacks": [
     {
       "id": "pack_lqdm",
-      "name": "Les Québécois De Minecraft",
+      "name": "LQDM",
       "version": "1.0.0",
       "minecraft": "26.3",
       "loader": "fabric",
@@ -15,7 +15,8 @@
       "shaderpacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/shaderpacks_manifest.json",
       "resourcepacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks_manifest.json",
       "servers_dat_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/servers.dat",
-      "server_host": "mc.qcsmp.mekhorizon.org:25565"
+      "server_host": "mc.qcsmp.mekhorizon.org:25565",
+      "discord": "https://discord.gg/EQyXcrG2hA"
     }
   ]
 }

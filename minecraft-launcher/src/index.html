@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Les Québécois De Minecraft</title>
+<title>LQDM</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
@@ -141,6 +141,8 @@
     transition: .18s; flex-shrink: 0;
   }
   .icon-btn:hover { background: rgba(255,255,255,.11); color: var(--paper); }
+  .icon-btn[hidden] { display: none; }
+  #discord-btn:hover { color: #fff; background: #5865f2; border-color: #5865f2; }
 
   /* ---- Corps : héros | faille | colonne d'état -------------------------- */
   #main {
@@ -164,6 +166,8 @@
     line-height: .86; letter-spacing: -.015em; text-transform: uppercase;
   }
   #pack-title .ln { display: block; }
+  /* Nom court (un seul mot, ex. LQDM) : plus grand pour remplir le héros. */
+  #pack-title.court { font-size: clamp(64px, 11vw, 132px); }
   /* Le mot central porte la fracture : dégradé cyan vers magenta. */
   #pack-title .ln.split {
     color: transparent;
@@ -406,7 +410,7 @@
       <div class="brand">
         <div class="mark"><span>QC</span></div>
         <div>
-          <div class="brand-name">Les Québécois De Minecraft</div>
+          <div class="brand-name">LQDM</div>
           <div class="brand-sub" data-i18n="brandSub">Launcher officiel</div>
         </div>
       </div>
@@ -416,6 +420,8 @@
           <div class="dot live"></div>
           <span id="username-label">Joueur</span>
         </div>
+        <!-- target=_blank : le lien s'ouvre dans le navigateur (setWindowOpenHandler) -->
+        <a id="discord-btn" class="icon-btn" target="_blank" rel="noopener" title="Discord du serveur" hidden><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M20.32 4.37A19.8 19.8 0 0 0 15.4 2.84a13.7 13.7 0 0 0-.63 1.29 18.4 18.4 0 0 0-5.5 0 13 13 0 0 0-.64-1.29 19.7 19.7 0 0 0-4.92 1.53C.6 9.05-.24 13.6.18 18.1a19.9 19.9 0 0 0 6.03 3.05c.49-.66.92-1.37 1.3-2.1a12.9 12.9 0 0 1-2.04-.98l.5-.39a14.2 14.2 0 0 0 12.07 0l.5.39c-.65.39-1.33.71-2.05.98.38.74.81 1.44 1.3 2.1a19.8 19.8 0 0 0 6.03-3.05c.5-5.22-.84-9.73-3.5-13.73ZM8.02 15.33c-1.18 0-2.16-1.09-2.16-2.42s.95-2.43 2.16-2.43c1.21 0 2.18 1.1 2.16 2.43 0 1.33-.95 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.15-1.09-2.15-2.42s.95-2.43 2.15-2.43c1.22 0 2.18 1.1 2.16 2.43 0 1.33-.94 2.42-2.16 2.42Z"/></svg></a>
         <button id="settings-btn" class="icon-btn" title="Paramètres">⚙</button>
       </div>
     </div>
@@ -423,11 +429,8 @@
     <div id="main">
       <div id="hero">
         <div class="eyebrow"><span data-i18n="heroEyebrow">Serveur privé</span></div>
-        <h1 id="pack-title">
-          <span class="ln reveal">Les</span>
-          <span class="ln split reveal">Québécois</span>
-          <span class="ln reveal">De</span>
-          <span class="ln reveal">Minecraft</span>
+        <h1 id="pack-title" class="court">
+          <span class="ln split reveal">LQDM</span>
         </h1>
         <p id="pack-desc"></p>
         <div id="facts">
@@ -606,7 +609,7 @@
       confirmLogout: 'Te déconnecter de ce compte Microsoft ? Tes mondes et tes mods restent intacts.',
       loggedOut: 'Déconnecté. Reconnecte-toi pour jouer.',
       diagRunning: 'Test en cours...',
-      diagCopied: 'Rapport copié. Colle-le sur Discord avec Ctrl+V.',
+      diagCopied: 'Rapport copié. Colle-le (Ctrl+V) dans le salon #support du Discord, ou envoie-le à poiboy34 sur Discord.',
       diagSaved: (p) => 'Rapport enregistré : ' + p,
       bannerDownload: 'Télécharger', bannerDownloading: 'Téléchargement...',
       bannerInstall: 'Installer et redémarrer', bannerReady: 'Mise à jour prête',
@@ -748,7 +751,12 @@
       span.textContent = w;
       title.appendChild(span);
     });
+    title.classList.toggle('court', words.length === 1 && words[0].length <= 6);
     $('pack-desc').textContent = pack.description || '';
+    // Lien Discord : vient du catalogue, donc modifiable sans nouvelle version du launcher.
+    const discord = $('discord-btn');
+    discord.hidden = !/^https:\/\//.test(pack.discord || '');
+    if (!discord.hidden) discord.href = pack.discord;
     $('fact-mc').textContent = pack.minecraft || '—';
     $('fact-loader').textContent = String(pack.loader || '—').replace(/^\w/, c => c.toUpperCase());
     $('fact-version').textContent = 'v' + (pack.version || '1.0.0');

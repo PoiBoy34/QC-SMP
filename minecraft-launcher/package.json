@@ -1,7 +1,7 @@
 {
   "name": "lqdm-launcher",
-  "version": "1.0.0",
-  "description": "LQDM-Launcher — launcher du serveur Les Québécois De Minecraft",
+  "version": "1.0.1",
+  "description": "LQDM-Launcher — launcher du serveur LQDM",
   "author": "PoiBoy34",
   "main": "src/index.js",
   "scripts": {
@@ -47,7 +47,7 @@
       "category": "Game",
       "desktop": {
         "entry": {
-          "Name": "Les Québécois De Minecraft",
+          "Name": "LQDM",
           "Categories": "Game;",
           "StartupWMClass": "lqdm-launcher"
         }
@@ -67,7 +67,7 @@
       "perMachine": false,
       "deleteAppDataOnUninstall": false,
       "artifactName": "${productName}-Setup-${version}.${ext}",
-      "shortcutName": "Les Québécois De Minecraft"
+      "shortcutName": "LQDM"
     },
     "asarUnpack": [
       "bin/**"

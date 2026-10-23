@@ -1,6 +1,6 @@
-# LQDM-Launcher — Les Québécois De Minecraft
+# LQDM-Launcher
 
-Le launcher du serveur **Les Québécois De Minecraft** (Java + consoles, Fabric).
+Le launcher de **LQDM**, le serveur Minecraft des Québécois (Java + consoles, Fabric).
 Tu l'installes une fois, tu te connectes, tu cliques sur **Jouer** : Minecraft,
 Fabric, Java et les mods se téléchargent et se mettent à jour tout seuls, puis le
 jeu se connecte **directement au serveur**.
@@ -14,7 +14,7 @@ Ou directement sur GitHub : https://github.com/PoiBoy34/QC-SMP/releases/latest
 ### Windows
 1. Télécharge **`LQDM-Launcher-Setup-x.x.x.exe`**
 2. Lance-le et suis l'installation
-3. Ouvre **Les Québécois De Minecraft** depuis le menu Démarrer ou le raccourci bureau
+3. Ouvre **LQDM** depuis le menu Démarrer ou le raccourci bureau
 
 ### Linux
 1. Télécharge **`LQDM-Launcher-x.x.x.AppImage`**
@@ -81,9 +81,15 @@ bannière apparaît en haut de la fenêtre → **Télécharger**, puis
 
 ## Besoin d'aide ?
 
-En cas de souci, note le message affiché en bas du launcher, ou utilise
-**⚙️ Paramètres → Diagnostic → Copier le rapport** : il contient tout ce qu'il
-faut pour comprendre le problème. Colle-le sur le Discord.
+Écris dans le salon **#support** du [Discord LQDM](https://discord.gg/EQyXcrG2hA),
+ou contacte **poiboy34** sur Discord.
+
+Joins le rapport du launcher : **⚙️ Paramètres → Aide et diagnostic → Copier le
+rapport de diagnostic**, puis colle-le dans ton message (Ctrl+V). Il contient tout
+ce qu'il faut pour comprendre le problème.
+
+Le Discord du serveur a été créé par **CampFire012**
+(son Discord : https://discord.gg/pcQqDzTq2B).
 
 ---
 
