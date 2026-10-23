@@ -1,5 +1,7 @@
 # mc-homelab : réseau Minecraft Java + Bedrock sur Proxmox
 
+> **Pressé ?** Suis le [mini guide de déploiement](DEPLOIEMENT.md), étape par étape.
+
 Un script, `./deploy.sh`, qui fait tout depuis ton PC :
 
 1. crée une clé SSH dédiée et l'installe sur Proxmox (le mot de passe root est demandé une seule fois) ;

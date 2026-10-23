@@ -102,7 +102,7 @@ faut pour comprendre le problème. Colle-le sur le Discord.
 | `publish.sh` | Listes + manifests + commit + push, en une commande |
 | `minecraft-launcher/` | Code du launcher (Electron), basé sur TimeRift-Launcher 2.1.3 |
 | `docs/` | Site de téléchargement (https://qcsmp.mekhorizon.org), publié par GitHub Pages |
-| `serveur/` | Déploiement du serveur sur Proxmox (Ansible, Docker, Velocity + Geyser) : voir [serveur/README.md](serveur/README.md) |
+| `serveur/` | Déploiement du serveur sur Proxmox (Ansible, Docker, Velocity + Geyser) : voir le [mini guide de déploiement](serveur/DEPLOIEMENT.md) |
 
 ## Ajouter un mod
 
