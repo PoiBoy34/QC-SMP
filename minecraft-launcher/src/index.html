@@ -411,10 +411,6 @@
         </div>
       </div>
       <div id="header-right">
-        <div id="lang-switch">
-          <button class="lang-btn" data-lang="fr">FR</button>
-          <button class="lang-btn" data-lang="en">EN</button>
-        </div>
         <button id="login-btn">Vérification...</button>
         <div id="user-pill">
           <div class="dot live"></div>
@@ -623,64 +619,6 @@
       confirmReset: (n) => 'Remettre les touches, options et minimap par défaut pour ' + n + " ?\n\nTes réglages actuels seront écrasés au prochain lancement.",
       updateAvailable: (v) => 'Version ' + v + ' disponible',
       updateProgress: (p) => 'Téléchargement : ' + p + '%'
-    },
-    en: {
-      brandSub: 'Official launcher',
-      heroEyebrow: 'Private server',
-      factVersion: 'Version', factLoader: 'Loader', factPack: 'Modpack',
-      cardServer: 'Server', cardInstance: 'Your setup',
-      refresh: 'Refresh', copyBtn: 'Copy', copied: 'Copied',
-      serverChecking: 'Checking...',
-      serverOnline: 'Online', serverOffline: 'Offline', serverUnknown: 'Unreachable',
-      playersLabel: (max) => ' / ' + max + ' players',
-      kvRam: 'Allocated memory', kvSync: 'Auto sync', kvSession: 'Session', kvDisk: 'Free space',
-      on: 'on', off: 'manual', sessionOk: 'signed in', sessionNo: 'signed out',
-      tileMods: 'Mods', tileShots: 'Photos', tileHelp: 'Help',
-      loginChecking: 'Checking...', loginConnecting: 'Signing in...',
-      loginMicrosoft: 'Sign in', loginRetry: 'Try again',
-      playChecking: 'Checking...',
-      playLogin: 'Sign in to play',
-      playPlay: 'Play',
-      playSyncing: 'Preparing...',
-      playLaunching: 'Starting Minecraft...',
-      playInGame: 'In game',
-      settingsTitle: 'Settings',
-      ramLabel: 'Memory allocated to the game', ramUnit: 'GB',
-      ramHint: (used, total, max) => used + ' GB of ' + total + ' GB detected. Recommended up to ' + max + ' GB.',
-      ramHintDanger: 'You are allocating all your machine memory. The game may not start at all.',
-      ramHintHigh: (max) => 'Above ' + max + ' GB there is little memory left for your system. If the game stutters or crashes on startup, lower it.',
-      ramClamped: (asked, used) => 'Memory reduced from ' + asked + ' to ' + used + ' GB, your machine cannot handle more.',
-      syncSectionLabel: 'Mods',
-      autoSyncLabel: 'Automatic sync',
-      autoSyncHint: 'On: your mods stay in sync with the server. Off: you manage your own mods.',
-      syncNowBtn: 'Check and repair mods',
-      foldersLabel: 'Folders',
-      openMods: 'Open mods folder', openDatapacks: 'Open datapacks folder',
-      openShaders: 'Open shaderpacks folder', openRP: 'Open resource packs folder',
-      openScreenshots: 'Open screenshots', openGame: 'Open game folder',
-      configLabel: 'Configuration',
-      resetDefaults: 'Reset keybinds and minimap',
-      supportLabel: 'Help and diagnostics',
-      testVoice: 'Test voice chat', copyLogs: 'Copy diagnostic report',
-      saveLogs: 'Save report (.txt)', openLogs: 'Open logs folder',
-      accountLabel: 'Account and launcher',
-      checkUpdate: 'Check for updates', logoutBtn: 'Sign out of Microsoft',
-      confirmLogout: 'Sign out of this Microsoft account? Your worlds and mods stay untouched.',
-      loggedOut: 'Signed out. Sign in again to play.',
-      diagRunning: 'Running test...',
-      diagCopied: 'Report copied. Paste it on Discord with Ctrl+V.',
-      diagSaved: (p) => 'Report saved: ' + p,
-      bannerDownload: 'Download', bannerDownloading: 'Downloading...',
-      bannerInstall: 'Install and restart', bannerReady: 'Update ready',
-      checking: 'Checking...', upToDate: 'Launcher up to date',
-      defaultsReset: 'Configs will be reinstalled on next launch.',
-      verifying: 'Checking files...',
-      gameReady: 'Minecraft is running. You can leave the launcher open.',
-      gameClosed: (d) => 'Session ended after ' + d + '. Ready to go again.',
-      gameClosedShort: 'Game closed. Ready to go again.',
-      confirmReset: (n) => 'Reset keybinds, options and minimap for ' + n + ' ?\n\nYour current settings will be overwritten on next launch.',
-      updateAvailable: (v) => 'Version ' + v + ' available',
-      updateProgress: (p) => 'Downloading: ' + p + '%'
     }
   };
 
@@ -689,7 +627,7 @@
   // ===========================================================================
   // État
   // ===========================================================================
-  let currentLang  = localStorage.getItem('lang') || 'fr';
+  let currentLang  = 'fr';
   let selectedPack = null;
   let isLoggedIn   = false;
   let loginState   = 'checking';   // checking | connecting | login | retry

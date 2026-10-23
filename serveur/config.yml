@@ -35,7 +35,7 @@ proxmox_cpu_performance: true
 # Le jeton Cloudflare va dans secrets.yml (copie de secrets.yml.exemple), jamais dans ce fichier :
 # config.yml est poussé sur GitHub, secrets.yml non.
 # N'utilise pas ce nom pour le tunnel Zero Trust : un sous-domaine pour le jeu, d'autres pour le web.
-domaine: ""                  # ex. "play.mekhorizon.org"
+domaine: ""                  # ex. "mc.qcsmp.mekhorizon.org"
 email_letsencrypt: ""        # pour les avis d'expiration (optionnel)
 
 # --- Minecraft ----------------------------------------------------------

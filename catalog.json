@@ -15,7 +15,7 @@
       "shaderpacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/shaderpacks_manifest.json",
       "resourcepacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks_manifest.json",
       "servers_dat_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/servers.dat",
-      "server_host": "play.mekhorizon.org:25565"
+      "server_host": "mc.qcsmp.mekhorizon.org:25565"
     }
   ]
 }

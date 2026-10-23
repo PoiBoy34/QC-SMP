@@ -74,7 +74,7 @@ pour développer, mais les tournages devraient se faire sur le dédié OVH.
 Sans HTTPS, chaque joueur Bedrock voit « faire confiance à ce serveur ? » à sa première connexion.
 Pour l'éviter, remplis dans `config.yml` :
 
-- `domaine` : par ex. `play.mekhorizon.org` ;
+- `domaine` : par ex. `mc.qcsmp.mekhorizon.org` ;
 - `cloudflare_api_token`, dans **`secrets.yml`** (copie `secrets.yml.exemple`) : Cloudflare →
   *My Profile → API Tokens → Create Token → Edit zone DNS*, limité à la zone `mekhorizon.org`.
   Ce fichier n'est jamais poussé sur GitHub.
@@ -91,7 +91,8 @@ parle directement à ta maison. Ce qui ajouterait du lag (ou casserait tout), c'
 
 | Nom | Type Cloudflare | Pourquoi |
 | --- | --- | --- |
-| `play.mekhorizon.org` | A, **DNS only (nuage gris)**, TTL 1 min | Le jeu va en direct. Géré par `mc-ddns`. |
+| `mc.qcsmp.mekhorizon.org` | A, **DNS only (nuage gris)**, TTL 1 min | Le jeu va en direct. Géré par `mc-ddns`. |
+| `qcsmp.mekhorizon.org` | CNAME vers `poiboy34.github.io`, **DNS only** | Site de téléchargement du launcher (GitHub Pages) |
 | pages web (carte, panneau…) | Tunnel Zero Trust | Du HTTP seulement, jamais le nom du jeu |
 
 - Jamais de nuage orange, de tunnel ni de Spectrum pour `play.` : le proxy orange ne transporte
@@ -118,7 +119,7 @@ Ce qui compte vraiment pour le lag, par ordre d'importance :
    N'envoie pas de vidéo sur YouTube pendant une session : un upload saturé fait exploser le
    ping de tout le monde. Un routeur avec SQM (OpenWrt, OPNsense) règle ce problème.
 3. **Les joueurs à la maison.** Si ton routeur ou un Pi-hole/AdGuard le permet, ajoute un DNS
-   local `play.mekhorizon.org → <vm_ip>` : les appareils de la maison passent directement par le
+   local `mc.qcsmp.mekhorizon.org → <vm_ip>` : les appareils de la maison passent directement par le
    réseau local au lieu de faire l'aller-retour par le routeur (et ça marche même si le routeur
    ne gère pas le « NAT loopback »). Sans risque pour Geyser, qui annonce des IP, pas le nom.
 4. **Vérifie que tu n'es pas derrière un CGNAT** : l'IP WAN affichée par le routeur doit être

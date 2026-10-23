@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les Québécois De Minecraft — Télécharger le launcher</title>
+<meta name="description" content="Télécharge le launcher du serveur Les Québécois De Minecraft et viens jouer, sur PC, console ou téléphone.">
+<meta property="og:title" content="Les Québécois De Minecraft">
+<meta property="og:description" content="Télécharge le launcher et viens jouer. Java et consoles ensemble.">
+<meta property="og:image" content="https://qcsmp.mekhorizon.org/apercu.png">
+<meta property="og:url" content="https://qcsmp.mekhorizon.org/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#003DA5">
+<link rel="icon" href="icone.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,700;100,800;125,800&display=swap" rel="stylesheet">
+<style>
+  /* Couleurs du fleurdelisé : le bleu du drapeau et le blanc. */
+  :root {
+    --bleu: #003da5;
+    --bleu-vif: #3d86ff;
+    --nuit: #04112e;
+    --carte: #0c1a3e;
+    --bord: rgba(255, 255, 255, 0.14);
+    --texte: #eef3ff;
+    --doux: #b3c2e6;
+    --ok: #4ade80;
+    --titre: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --corps: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--corps);
+    color: var(--texte);
+    background: var(--nuit);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* La croix blanche du drapeau, en très discret derrière la page */
+  .fond {
+    position: fixed; inset: 0; z-index: -1;
+    background:
+      linear-gradient(90deg, transparent calc(50% - 46px), rgba(255,255,255,.035) calc(50% - 46px),
+                      rgba(255,255,255,.035) calc(50% + 46px), transparent calc(50% + 46px)),
+      linear-gradient(180deg, transparent 38vh, rgba(255,255,255,.035) 38vh,
+                      rgba(255,255,255,.035) calc(38vh + 92px), transparent calc(38vh + 92px)),
+      radial-gradient(120% 70% at 50% -10%, #0a3c9e 0%, var(--nuit) 62%);
+  }
+  a { color: #9cc2ff; }
+  .page { max-width: 980px; margin: 0 auto; padding: 0 20px 48px; }
+
+  header { display: flex; align-items: center; gap: 12px; padding: 20px 0; }
+  header img { width: 44px; height: 44px; border-radius: 10px; }
+  header span {
+    font-family: var(--titre); font-weight: 800; font-size: 17px;
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+
+  .accroche { text-align: center; padding: 36px 0 28px; }
+  h1 {
+    font-family: var(--titre); font-weight: 800; font-stretch: 112%;
+    font-size: clamp(34px, 7vw, 64px); line-height: 1.02; letter-spacing: -.01em;
+    text-transform: uppercase;
+  }
+  h1 em {
+    font-style: normal; color: transparent;
+    background: linear-gradient(95deg, #7fb1ff, #ffffff);
+    -webkit-background-clip: text; background-clip: text;
+  }
+  .accroche p { color: var(--doux); font-size: clamp(16px, 2.6vw, 19px); margin: 16px auto 0; max-width: 34em; }
+
+  .etat {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 20px;
+    padding: 7px 14px; border-radius: 999px; background: var(--carte); border: 1px solid var(--bord);
+    font-size: 14px; color: var(--doux);
+  }
+  .etat .point { width: 9px; height: 9px; border-radius: 50%; background: #64748b; }
+  .etat.en-ligne .point { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .etat[hidden] { display: none; }
+
+  .telecharger { margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .bouton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    min-width: min(100%, 360px); padding: 18px 30px; border-radius: 14px;
+    background: #ffffff; color: var(--bleu); text-decoration: none;
+    font-family: var(--titre); font-weight: 800; font-size: 20px; letter-spacing: .03em; text-transform: uppercase;
+    box-shadow: 0 10px 40px rgba(61, 134, 255, .35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .bouton:hover { transform: translateY(-2px); box-shadow: 0 14px 50px rgba(61, 134, 255, .5); }
+  .bouton svg { width: 24px; height: 24px; flex-shrink: 0; }
+  .sous-bouton { font-size: 14px; color: var(--doux); }
+  .autres { font-size: 14px; color: var(--doux); }
+  .message-appareil {
+    max-width: 30em; padding: 14px 18px; border-radius: 12px; font-size: 15px;
+    background: rgba(61, 134, 255, .12); border: 1px solid rgba(61, 134, 255, .35);
+  }
+  .message-appareil[hidden] { display: none; }
+
+  .onglets {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    margin: 44px 0 18px;
+  }
+  .onglet {
+    padding: 11px 18px; border-radius: 999px; border: 1px solid var(--bord);
+    background: transparent; color: var(--doux); font: 600 15px var(--corps); cursor: pointer;
+  }
+  .onglet[aria-selected="true"] { background: var(--bleu); border-color: var(--bleu-vif); color: #fff; }
+
+  .panneau[hidden] { display: none; }
+  .etapes { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .etape {
+    padding: 22px; border-radius: 16px; background: var(--carte); border: 1px solid var(--bord);
+  }
+  .etape .num {
+    width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center;
+    background: var(--bleu); border: 1px solid var(--bleu-vif);
+    font-family: var(--titre); font-weight: 800; font-size: 19px; margin-bottom: 12px;
+  }
+  .etape h3 { font-family: var(--titre); font-weight: 800; font-size: 19px; margin-bottom: 6px; }
+  .etape p { color: var(--doux); font-size: 15px; }
+  .etape p + p { margin-top: 8px; }
+
+  .aide {
+    margin-top: 14px; padding: 20px 22px; border-radius: 16px;
+    background: rgba(255, 196, 81, .08); border: 1px solid rgba(255, 196, 81, .3);
+  }
+  .aide h3 { font-family: var(--titre); font-weight: 800; font-size: 18px; margin-bottom: 8px; color: #ffd98a; }
+  .aide p, .aide li { color: #f3e6c9; font-size: 15px; }
+  .aide ol { padding-left: 22px; margin-top: 6px; }
+  .aide b { color: #fff; }
+
+  .copier-ligne {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+  }
+  code {
+    font: 600 16px ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    padding: 7px 12px; border-radius: 8px; background: rgba(0, 0, 0, .35); border: 1px solid var(--bord);
+    color: #fff; word-break: break-all;
+  }
+  .copier {
+    padding: 7px 12px; border-radius: 8px; border: 1px solid var(--bord);
+    background: rgba(255, 255, 255, .08); color: var(--texte); font: 600 14px var(--corps); cursor: pointer;
+  }
+  .copier:hover { background: rgba(255, 255, 255, .16); }
+
+  h2 {
+    font-family: var(--titre); font-weight: 800; font-size: clamp(22px, 4vw, 28px);
+    text-transform: uppercase; letter-spacing: .02em; margin: 56px 0 16px; text-align: center;
+  }
+  details {
+    border-radius: 14px; background: var(--carte); border: 1px solid var(--bord);
+    padding: 16px 20px; margin-bottom: 10px;
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 16px; }
+  details p { color: var(--doux); margin-top: 10px; font-size: 15px; }
+
+  footer { margin-top: 56px; text-align: center; color: #7f8db3; font-size: 13px; }
+  footer p + p { margin-top: 6px; }
+
+  @media (max-width: 520px) {
+    .page { padding: 0 16px 40px; }
+    .bouton { width: 100%; font-size: 18px; padding: 17px 20px; }
+    .onglet { flex: 1 1 auto; }
+  }
+</style>
+</head>
+<body>
+<div class="fond"></div>
+<div class="page">
+
+  <header>
+    <img src="icone.png" alt="">
+    <span>Les Québécois De Minecraft</span>
+  </header>
+
+  <section class="accroche">
+    <h1>Le serveur Minecraft <em>des Québécois</em></h1>
+    <p>Sur PC, sur console ou sur téléphone : tout le monde joue ensemble.
+      Survie, mini-jeux et tournages de vidéos.</p>
+    <div class="etat" id="etat" hidden><span class="point"></span><span id="etat-texte"></span></div>
+
+    <div class="telecharger">
+      <a class="bouton" id="bouton-principal" href="https://github.com/PoiBoy34/QC-SMP/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m6 10 6 6 6-6"/><path d="M4 20h16"/></svg>
+        <span id="bouton-texte">Télécharger pour Windows</span>
+      </a>
+      <div class="sous-bouton" id="sous-bouton">Gratuit · Windows 10 et 11</div>
+      <div class="autres" id="autres">Sur Linux ? <a id="lien-linux" href="https://github.com/PoiBoy34/QC-SMP/releases/latest">Prends la version AppImage</a></div>
+      <div class="message-appareil" id="message-appareil" hidden></div>
+    </div>
+  </section>
+
+  <nav class="onglets" role="tablist" aria-label="Sur quoi joues-tu ?">
+    <button class="onglet" role="tab" id="onglet-pc" aria-controls="pc" aria-selected="true">💻 Sur PC</button>
+    <button class="onglet" role="tab" id="onglet-console" aria-controls="console" aria-selected="false">🎮 Sur console</button>
+    <button class="onglet" role="tab" id="onglet-mobile" aria-controls="mobile" aria-selected="false">📱 Sur téléphone ou tablette</button>
+  </nav>
+
+  <!-- PC (Minecraft Java) -->
+  <section class="panneau" id="pc" role="tabpanel" aria-labelledby="onglet-pc">
+    <div class="etapes">
+      <div class="etape">
+        <div class="num">1</div>
+        <h3>Télécharge et installe</h3>
+        <p>Clique sur le gros bouton blanc, puis ouvre le fichier téléchargé et suis l'installation.</p>
+      </div>
+      <div class="etape">
+        <div class="num">2</div>
+        <h3>Connecte-toi</h3>
+        <p>Ouvre <b>Les Québécois De Minecraft</b> et connecte-toi avec ton compte Microsoft,
+          celui avec lequel tu as acheté Minecraft.</p>
+      </div>
+      <div class="etape">
+        <div class="num">3</div>
+        <h3>Clique sur Jouer</h3>
+        <p>La première fois, le téléchargement prend quelques minutes. Ensuite, le jeu s'ouvre
+          et t'amène directement au spawn.</p>
+      </div>
+    </div>
+    <div class="aide">
+      <h3>Un écran bleu « Windows a protégé votre ordinateur » ?</h3>
+      <p>C'est normal : Windows affiche ça pour tous les petits programmes qu'il ne connaît pas encore.
+        Ce n'est pas un virus.</p>
+      <ol>
+        <li>Clique sur <b>Informations complémentaires</b>.</li>
+        <li>Puis sur <b>Exécuter quand même</b>.</li>
+      </ol>
+      <p style="margin-top:10px">Si Chrome ou Edge bloque le téléchargement : clique sur les trois points
+        à côté du fichier, puis sur <b>Conserver</b>.</p>
+    </div>
+  </section>
+
+  <!-- Consoles -->
+  <section class="panneau" id="console" role="tabpanel" aria-labelledby="onglet-console" hidden>
+    <div class="etapes">
+      <div class="etape">
+        <div class="num">1</div>
+        <h3>Ajoute le serveur en ami</h3>
+        <p>Dans Minecraft : <b>Jouer</b>, onglet <b>Amis</b>, puis <b>Ajouter un ami</b>.</p>
+        <p id="gamertag-bloc">Cherche ce nom :</p>
+        <div class="copier-ligne" id="gamertag-ligne">
+          <code id="gamertag"></code>
+          <button class="copier" data-copier="gamertag">Copier</button>
+        </div>
+      </div>
+      <div class="etape">
+        <div class="num">2</div>
+        <h3>Attends l'invitation</h3>
+        <p>Le serveur accepte ta demande tout seul. Ça peut prendre une minute.</p>
+      </div>
+      <div class="etape">
+        <div class="num">3</div>
+        <h3>Rejoins la partie</h3>
+        <p>Retourne dans l'onglet <b>Amis</b> : le serveur apparaît dans les parties qu'on peut
+          rejoindre. Sélectionne-le et clique sur <b>Rejoindre</b>.</p>
+      </div>
+    </div>
+    <div class="aide">
+      <h3>Avant de commencer</h3>
+      <p>Minecraft doit être à jour et connecté à ton compte Microsoft. Sur PlayStation et Switch,
+        le jeu en ligne peut demander un abonnement (PS Plus, Nintendo Switch Online).</p>
+    </div>
+  </section>
+
+  <!-- Téléphone, tablette, Bedrock sur PC -->
+  <section class="panneau" id="mobile" role="tabpanel" aria-labelledby="onglet-mobile" hidden>
+    <div class="etapes">
+      <div class="etape">
+        <div class="num">1</div>
+        <h3>Ouvre les serveurs</h3>
+        <p>Dans Minecraft : <b>Jouer</b>, onglet <b>Serveurs</b>, puis tout en bas
+          <b>Ajouter un serveur</b>.</p>
+      </div>
+      <div class="etape">
+        <div class="num">2</div>
+        <h3>Entre l'adresse</h3>
+        <p>Nom : ce que tu veux. Adresse :</p>
+        <div class="copier-ligne"><code id="adresse"></code><button class="copier" data-copier="adresse">Copier</button></div>
+        <p>Port :</p>
+        <div class="copier-ligne"><code id="port"></code><button class="copier" data-copier="port">Copier</button></div>
+      </div>
+      <div class="etape">
+        <div class="num">3</div>
+        <h3>Rejoins</h3>
+        <p>Enregistre, puis touche le serveur pour le rejoindre. Accepte le pack de textures
+          si le jeu te le propose.</p>
+      </div>
+    </div>
+    <div class="aide">
+      <h3>Ça marche aussi avec Minecraft Bedrock sur PC</h3>
+      <p>La version « Minecraft pour Windows » (Bedrock) se connecte de la même façon, avec l'adresse
+        et le port ci-dessus.</p>
+    </div>
+  </section>
+
+  <h2>Questions</h2>
+  <details>
+    <summary>Le serveur me dit que je ne suis pas sur la liste blanche</summary>
+    <p>Le serveur est privé. Demande à un admin de t'ajouter, en lui donnant ton pseudo
+      (ton gamertag si tu joues sur console, téléphone ou tablette).</p>
+  </details>
+  <details>
+    <summary>Est-ce que le launcher est gratuit ? Est-ce un virus ?</summary>
+    <p>Il est gratuit et ce n'est pas un virus : son code est public sur
+      <a href="https://github.com/PoiBoy34/QC-SMP">GitHub</a>, et le fichier est fabriqué
+      automatiquement à partir de ce code. Il te faut quand même ton propre compte Minecraft.</p>
+  </details>
+  <details>
+    <summary>Est-ce que je peux jouer sans le launcher ?</summary>
+    <p>Oui : dans Minecraft Java, va dans Multijoueur et ajoute l'adresse du serveur. Le launcher
+      installe en plus les mods qui rendent le jeu plus fluide et te connecte directement.</p>
+  </details>
+  <details>
+    <summary>J'ai un Mac</summary>
+    <p>Le launcher n'existe pas encore sur Mac. Tu peux jouer avec Minecraft Java en ajoutant
+      l'adresse du serveur dans Multijoueur.</p>
+  </details>
+  <details>
+    <summary>Ça ne marche pas, qu'est-ce que je fais ?</summary>
+    <p>Dans le launcher : ⚙️ Paramètres, puis Diagnostic, puis <b>Copier le rapport</b>.
+      Envoie-le à un admin avec une capture d'écran du message d'erreur.</p>
+  </details>
+
+  <footer>
+    <p>Les Québécois De Minecraft · <a href="https://github.com/PoiBoy34/QC-SMP">Code source</a>
+      · <a href="https://github.com/PoiBoy34/QC-SMP/releases">Toutes les versions</a></p>
+    <p>Serveur non officiel, sans lien avec Mojang Studios ni Microsoft.</p>
+  </footer>
+</div>
+
+<script>
+  // Réglages du site : à garder identiques au catalog.json et à serveur/config.yml.
+  const REGLAGES = {
+    depot: 'PoiBoy34/QC-SMP',
+    adresse: 'mc.qcsmp.mekhorizon.org',
+    portBedrock: '19132',
+    gamertag: ''          // gamertag du compte Xbox du serveur (MCXboxBroadcast)
+  };
+
+  const $ = (id) => document.getElementById(id);
+  $('adresse').textContent = REGLAGES.adresse;
+  $('port').textContent = REGLAGES.portBedrock;
+  if (REGLAGES.gamertag) {
+    $('gamertag').textContent = REGLAGES.gamertag;
+  } else {
+    $('gamertag-bloc').textContent = 'Le nom du compte du serveur sera bientôt annoncé ici.';
+    $('gamertag-ligne').hidden = true;
+  }
+
+  // --- Onglets --------------------------------------------------------------
+  const onglets = [...document.querySelectorAll('.onglet')];
+  function ouvrir(id) {
+    onglets.forEach((o) => {
+      const actif = o.getAttribute('aria-controls') === id;
+      o.setAttribute('aria-selected', String(actif));
+      $(o.getAttribute('aria-controls')).hidden = !actif;
+    });
+  }
+  onglets.forEach((o) => o.addEventListener('click', () => ouvrir(o.getAttribute('aria-controls'))));
+
+  // --- Appareil : on montre directement ce qui concerne le visiteur ---------
+  const ua = navigator.userAgent;
+  const mobile = /Android|iPhone|iPad|iPod/i.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+  const linux = /Linux/i.test(ua) && !/Android/i.test(ua);
+  const mac = /Macintosh|Mac OS X/i.test(ua) && !mobile;
+  function message(texte) { const m = $('message-appareil'); m.textContent = texte; m.hidden = false; }
+  if (mobile) {
+    ouvrir('mobile');
+    ['bouton-principal', 'sous-bouton', 'autres'].forEach((id) => { $(id).hidden = true; });
+    message("Tu es sur téléphone ou tablette : pas besoin du launcher, suis les étapes juste en dessous. " +
+            "Le launcher, c'est pour jouer sur un ordinateur.");
+  } else if (mac) {
+    message("Le launcher n'existe pas encore sur Mac : joue avec Minecraft Java et l'adresse " + REGLAGES.adresse + ".");
+  } else if (linux) {
+    $('bouton-texte').textContent = 'Télécharger pour Linux';
+    $('sous-bouton').textContent = 'Gratuit · fichier AppImage';
+    $('autres').innerHTML = 'Sur Windows ? <a id="lien-windows" href="#">Prends la version Windows</a>';
+  }
+
+  // --- Lien direct vers la dernière version ---------------------------------
+  fetch('https://api.github.com/repos/' + REGLAGES.depot + '/releases/latest')
+    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((release) => {
+      const fichier = (fin) => release.assets.find((a) => a.name.endsWith(fin));
+      const exe = fichier('.exe'), appimage = fichier('.AppImage');
+      const mo = (a) => Math.round(a.size / 1048576) + ' Mo';
+      const version = release.tag_name.replace(/^v/, '');
+      if (linux && appimage) {
+        $('bouton-principal').href = appimage.browser_download_url;
+        $('sous-bouton').textContent = 'Gratuit · AppImage · version ' + version + ' · ' + mo(appimage);
+        if (exe && $('lien-windows')) $('lien-windows').href = exe.browser_download_url;
+      } else if (exe) {
+        $('bouton-principal').href = exe.browser_download_url;
+        $('sous-bouton').textContent = 'Gratuit · Windows 10 et 11 · version ' + version + ' · ' + mo(exe);
+        if (appimage) $('lien-linux').href = appimage.browser_download_url;
+      }
+    })
+    .catch(() => { /* les liens restent sur la page des versions de GitHub */ });
+
+  // --- État du serveur ------------------------------------------------------
+  fetch('https://api.mcsrvstat.us/3/' + REGLAGES.adresse)
+    .then((r) => r.json())
+    .then((s) => {
+      const etat = $('etat');
+      if (s.online) {
+        etat.classList.add('en-ligne');
+        const n = s.players ? s.players.online : 0;
+        $('etat-texte').textContent = 'Serveur en ligne · ' + n + (n > 1 ? ' joueurs' : ' joueur') + ' connecté' + (n > 1 ? 's' : '');
+      } else {
+        $('etat-texte').textContent = 'Serveur fermé pour le moment';
+      }
+      etat.hidden = false;
+    })
+    .catch(() => {});
+
+  // --- Boutons Copier -------------------------------------------------------
+  document.querySelectorAll('[data-copier]').forEach((b) => {
+    b.addEventListener('click', () => {
+      const texte = $(b.dataset.copier).textContent;
+      const fini = () => { b.textContent = 'Copié !'; setTimeout(() => { b.textContent = 'Copier'; }, 1500); };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(texte).then(fini).catch(() => {});
+      } else {
+        const zone = document.createElement('textarea');
+        zone.value = texte; document.body.appendChild(zone); zone.select();
+        document.execCommand('copy'); zone.remove(); fini();
+      }
+    });
+  });
+</script>
+</body>
+</html>

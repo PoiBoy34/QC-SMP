@@ -5,11 +5,11 @@ Tu l'installes une fois, tu te connectes, tu cliques sur **Jouer** : Minecraft,
 Fabric, Java et les mods se téléchargent et se mettent à jour tout seuls, puis le
 jeu se connecte **directement au serveur**.
 
-*(English version below ⬇️)*
-
 ## Installation
 
-👉 **https://github.com/PoiBoy34/QC-SMP/releases/latest**
+👉 **https://qcsmp.mekhorizon.org** : la page de téléchargement, avec toutes les étapes.
+
+Ou directement sur GitHub : https://github.com/PoiBoy34/QC-SMP/releases/latest
 
 ### Windows
 1. Télécharge **`LQDM-Launcher-Setup-x.x.x.exe`**
@@ -23,8 +23,8 @@ jeu se connecte **directement au serveur**.
 3. Double-clique dessus
 
 ### Sur console (Xbox, PlayStation, Switch), téléphone ou Bedrock Windows
-Pas besoin de launcher : suis le guide joueurs du serveur (ajout du compte du serveur en ami,
-ou adresse `play.mekhorizon.org`, port `19132`).
+Pas besoin de launcher : tout est expliqué sur https://qcsmp.mekhorizon.org (ajout du compte
+du serveur en ami, ou adresse `mc.qcsmp.mekhorizon.org`, port `19132`).
 
 ## ⚠️ « Windows a protégé votre ordinateur » / avertissement du navigateur
 
@@ -87,35 +87,6 @@ faut pour comprendre le problème. Colle-le sur le Discord.
 
 ---
 
-# LQDM-Launcher (English)
-
-The launcher for the **Les Québécois De Minecraft** server (Java + consoles, Fabric).
-Install it once, log in, hit **Play**: Minecraft, Fabric, Java and the mods
-download and update on their own, then the game joins the server directly.
-
-## Installation
-
-👉 **https://github.com/PoiBoy34/QC-SMP/releases/latest**
-
-- **Windows**: download **`LQDM-Launcher-Setup-x.x.x.exe`** and run it.
-- **Linux**: download **`LQDM-Launcher-x.x.x.AppImage`**, `chmod +x` it, run it.
-- **Consoles, phones, Bedrock on Windows**: no launcher needed, see the server's player guide.
-
-## ⚠️ "Windows protected your PC" / browser warning
-
-This is expected, not a virus. Windows and Chrome warn about **any** downloaded
-program that isn't yet installed by thousands of people.
-
-- **Chrome / Edge**: click the arrow next to the file → **Keep**.
-- **SmartScreen**: click **More info** → **Run anyway**.
-- **Antivirus**: false positive — restore the file and whitelist the install folder.
-
-The full source is in this repository, and the binaries are built from it
-automatically by GitHub Actions. The launcher updates itself: a banner appears
-when a new version is out.
-
----
-
 # Pour le mainteneur
 
 | Chemin | Rôle |
@@ -130,6 +101,7 @@ when a new version is out.
 | `update_manifest.sh` | Régénère les manifests |
 | `publish.sh` | Listes + manifests + commit + push, en une commande |
 | `minecraft-launcher/` | Code du launcher (Electron), basé sur TimeRift-Launcher 2.1.3 |
+| `docs/` | Site de téléchargement (https://qcsmp.mekhorizon.org), publié par GitHub Pages |
 | `serveur/` | Déploiement du serveur sur Proxmox (Ansible, Docker, Velocity + Geyser) : voir [serveur/README.md](serveur/README.md) |
 
 ## Ajouter un mod
@@ -187,17 +159,20 @@ le jeu s'ouvre sur le menu au lieu de se connecter directement.
 
 ## Publier une version du launcher
 
-Change le numéro de version, pousse un tag : GitHub Actions construit le
-`.exe` et l'`.AppImage`, puis publie la release **tout seul** une fois les
-5 fichiers présents (`.exe`, `.exe.blockmap`, `latest.yml`, `.AppImage`,
-`latest-linux.yml`).
+Change le numéro de `version` dans `minecraft-launcher/package.json` et pousse sur `main`
+(ça marche aussi en modifiant le fichier directement sur github.com). GitHub Actions
+construit le `.exe` et l'`.AppImage`, puis publie la release **tout seul** une fois les
+5 fichiers présents (`.exe`, `.exe.blockmap`, `latest.yml`, `.AppImage`, `latest-linux.yml`).
+Les launchers installés proposent alors la mise à jour, et le site donne la nouvelle version.
 
 ```bash
 cd minecraft-launcher && npm version 1.0.1 --no-git-tag-version && cd ..
 git commit -am "launcher 1.0.1" && git push
-git tag v1.0.1 && git push --tags
 gh run watch    # facultatif : suivre le build
 ```
+
+Pousser un tag `v1.0.1` marche aussi, comme sur TimeRift. Une version déjà publiée
+n'est jamais reconstruite.
 
 Si le job *publier* échoue, la release reste en brouillon : vérifie les 5 fichiers
 dans l'onglet Releases, puis `gh release edit v1.0.1 --draft=false`. Ne la publie

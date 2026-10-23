@@ -1,9 +1,15 @@
 name: Build & release
 
-# Se déclenche quand tu pousses un tag de version (v1.0.0, v1.0.1, ...)
-# ou manuellement depuis l'onglet Actions.
+# Publie une release quand la version du launcher change : modifie "version" dans
+# minecraft-launcher/package.json (même directement sur github.com) et pousse sur main.
+# Pousser un tag v1.0.1, ou lancer le workflow depuis l'onglet Actions, marche aussi.
+# Une version déjà publiée n'est jamais reconstruite.
 on:
   push:
+    branches: [main]
+    paths:
+      - 'minecraft-launcher/package.json'
+      - '.github/workflows/build.yml'
     tags: ['v*']
   workflow_dispatch:
 
@@ -15,7 +21,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      nouvelle: ${{ steps.v.outputs.nouvelle }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="v$(jq -r .version minecraft-launcher/package.json)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null | grep -qx false; then
+            echo "La release $tag est déjà publiée : rien à construire."
+            echo "nouvelle=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "nouvelle=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: version
+    if: needs.version.outputs.nouvelle == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -45,15 +74,15 @@ jobs:
   # une minute avant Windows. On ne la rend publique qu'une fois les 5 fichiers présents :
   # publiée trop tôt, la release ne laisse plus au .exe d'endroit où atterrir.
   publier:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [version, build]
+    if: needs.version.outputs.nouvelle == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Vérifier les 5 fichiers puis publier la release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ needs.version.outputs.tag }}
         run: |
           version="${TAG#v}"
           attendus=(
