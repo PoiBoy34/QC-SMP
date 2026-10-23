@@ -1,0 +1,66 @@
+name: Mods
+
+# Dès que mods.txt, shaders.txt ou resourcepacks.txt change (même modifié directement
+# sur github.com), ou qu'un fichier est déposé dans modpacks/ : résout les listes sur
+# Modrinth, régénère les manifests et les pousse. Les joueurs reçoivent le changement
+# au lancement suivant.
+# À la main (onglet Actions → Mods → Run workflow) : mise à jour de tous les mods,
+# ou changement de version de Minecraft.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'modpacks/**'
+      - 'catalog.json'
+      - 'outils/**'
+  workflow_dispatch:
+    inputs:
+      maj:
+        description: 'Passer tous les mods à leur dernière version compatible'
+        type: boolean
+        default: false
+      minecraft:
+        description: 'Nouvelle version de Minecraft (ex. 26.2, ou latest). Vide = ne rien changer'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+# Pas d'annulation : deux pushes rapprochés sont traités l'un après l'autre.
+concurrency:
+  group: mods-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mods:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Résoudre les listes Modrinth
+        env:
+          MAJ: ${{ inputs.maj }}
+          MINECRAFT: ${{ inputs.minecraft }}
+        run: |
+          options=()
+          [ "$MAJ" = "true" ] && options+=(--maj)
+          [ -n "$MINECRAFT" ] && options+=(--minecraft "$MINECRAFT")
+          python3 outils/modrinth.py "${options[@]}"
+
+      - name: Régénérer les manifests
+        run: ./update_manifest.sh
+
+      - name: Pousser le résultat
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A catalog.json modpacks/
+          if git diff --staged --quiet; then
+            echo "Rien à changer."
+            exit 0
+          fi
+          git commit -m "auto : mods et manifests"
+          git pull --rebase
+          git push

@@ -1,0 +1,5 @@
+# Shaders proposés (pour Iris), un nom Modrinth par ligne (modrinth.com/shader/<nom>).
+# Ils sont installés mais désactivés : chaque joueur choisit dans
+# Options → Options vidéo → Shaders. Même syntaxe que mods.txt (nom?, nom==version).
+
+complementary-reimagined?

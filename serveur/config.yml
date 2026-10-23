@@ -1,0 +1,73 @@
+# =====================================================================
+#  SEUL FICHIER À MODIFIER  —  puis lancer ./deploy.sh
+# =====================================================================
+# Minimum obligatoire : proxmox_ip et vm_ip.
+# Tout le reste a une valeur par défaut qui marche pour le homelab.
+# Aucun secret ici : ce fichier est versionné sur GitHub.
+
+# --- Réseau (OBLIGATOIRE) --------------------------------------------
+proxmox_ip: "192.168.1.10"   # IP de ton hôte Proxmox (celle de l'interface web, sans :8006)
+vm_ip: "192.168.1.50"        # IP fixe à donner à la VM Minecraft (libre, hors plage DHCP du routeur)
+
+# Passerelle, masque et DNS sont détectés automatiquement sur l'hôte Proxmox.
+# Décommente seulement pour forcer une valeur :
+# vm_gateway: "192.168.1.1"
+# vm_cidr: 24
+# vm_dns: "1.1.1.1"
+
+# --- VM Proxmox --------------------------------------------------------
+vm_id: 250                   # ID libre dans Proxmox
+vm_name: "mc-reseau"
+vm_cores: 6                  # plafonné automatiquement au nombre de cœurs de l'hôte
+vm_memory_mb: 12288          # 12 Go : assez pour proxy + spawn + SMP + 1 mini-jeu en dev
+vm_disk_gb: 80
+vm_storage: ""               # vide = auto (local-lvm, puis local-zfs, puis le premier dispo)
+vm_bridge: "vmbr0"
+vm_user: "mcadmin"           # utilisateur SSH de la VM (connexion par clé uniquement)
+# Gouverneur CPU « performance » sur l'hôte Proxmox : le processeur reste à pleine fréquence
+# quand il travaille, donc des ticks plus réguliers. Coûte quelques watts. false = ne rien changer.
+proxmox_cpu_performance: true
+
+# --- Domaine + HTTPS NetherNet (fortement recommandé) -----------------
+# Avec domaine + jeton Cloudflare : certificat Let's Encrypt automatique (plus de question
+# « faire confiance à ce serveur ? » sur console) et DNS dynamique vers ton IP maison,
+# en « DNS only » (nuage gris, TTL 1 min) : le jeu ne passe jamais par Cloudflare.
+# Le jeton Cloudflare va dans secrets.yml (copie de secrets.yml.exemple), jamais dans ce fichier :
+# config.yml est poussé sur GitHub, secrets.yml non.
+# N'utilise pas ce nom pour le tunnel Zero Trust : un sous-domaine pour le jeu, d'autres pour le web.
+domaine: ""                  # ex. "play.mekhorizon.org"
+email_letsencrypt: ""        # pour les avis d'expiration (optionnel)
+
+# --- Minecraft ----------------------------------------------------------
+nom_projet: "Les Québécois De Minecraft"
+# Doit correspondre à la version du launcher (« minecraft » dans catalog.json, à la racine du dépôt QC-SMP).
+# LATEST = dernière version de Paper ; fige-la (ex. "26.2") une fois tout validé.
+mc_version: "LATEST"
+fuseau: "America/Toronto"
+
+# NetherNet : "both" accepte l'ancien (RakNet) ET le nouveau protocole.
+# Passe à "nethernet" quand toutes les consoles sont en Bedrock 26.60+.
+geyser_transport: "both"
+
+# Diffusion du serveur dans l'onglet Amis des consoles (méthode 1 du guide).
+# Utilise un compte Xbox DÉDIÉ, jamais le tien.
+xbox_broadcast: true
+
+# Pseudos Java qui seront op (et ajoutés à la liste blanche). Ex. ["JosephMC"]
+admins_java: []
+
+# Mémoire Java de chaque serveur
+ram_proxy: "1536M"
+ram_spawn: "1536M"
+ram_smp: "4G"
+
+# Mini-jeux : un serveur Paper isolé par entrée (nom en minuscules, chiffres, tirets)
+minijeux:
+  - { nom: "minijeu1", ram: "1536M" }
+
+# --- Sauvegardes -------------------------------------------------------
+sauvegarde_heure: "04:30"
+sauvegarde_jours: 7
+# Copie hors de la VM après chaque sauvegarde (rsync). Vide = désactivé.
+# ex. "backup@192.168.1.20:/srv/sauvegardes/minecraft/"
+sauvegarde_rsync: ""

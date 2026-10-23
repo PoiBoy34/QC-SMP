@@ -1,0 +1,21 @@
+{
+  "modpacks": [
+    {
+      "id": "pack_lqdm",
+      "name": "Les Québécois De Minecraft",
+      "version": "1.0.0",
+      "minecraft": "latest",
+      "loader": "fabric",
+      "loader_version": "latest",
+      "description": "Le serveur des Québécois, Java et consoles ensemble. Clique sur Jouer : tu arrives directement au spawn.",
+      "icon_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/assets/pack-icons/lqdm.png",
+      "background_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/assets/pack-backgrounds/lqdm.png",
+      "manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/manifest.json",
+      "datapacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/datapacks_manifest.json",
+      "shaderpacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/shaderpacks_manifest.json",
+      "resourcepacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks_manifest.json",
+      "servers_dat_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/servers.dat",
+      "server_host": "play.mekhorizon.org:25565"
+    }
+  ]
+}

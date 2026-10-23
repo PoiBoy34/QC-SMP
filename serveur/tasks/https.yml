@@ -1,0 +1,83 @@
+---
+# Certificat Let's Encrypt pour la signalisation NetherNet (défi DNS via Cloudflare :
+# aucun port 80/443 à ouvrir). Sans domaine ou sans jeton, Geyser reste en HTTP et les
+# consoles verront la question « faire confiance à ce serveur ? » à la première connexion.
+
+- name: HTTPS NetherNet possible ?
+  ansible.builtin.set_fact:
+    https_actif: "{{ (domaine | default('') | length > 0) and (cloudflare_api_token | default('') | length > 0) }}"
+
+- name: Dossiers des certificats et des scripts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0750"
+  loop:
+    - "{{ base }}"
+    - "{{ base }}/certs"
+    - "{{ base }}/bin"
+
+- name: Certificat Let's Encrypt
+  when: https_actif | bool
+  block:
+    - name: Installer certbot et le module Cloudflare
+      ansible.builtin.apt:
+        name: [certbot, python3-certbot-dns-cloudflare]
+        state: present
+
+    - name: Dossier de certbot
+      ansible.builtin.file:
+        path: /etc/letsencrypt
+        state: directory
+        mode: "0755"
+
+    - name: Jeton Cloudflare pour certbot
+      ansible.builtin.copy:
+        dest: /etc/letsencrypt/cloudflare.ini
+        mode: "0600"
+        content: "dns_cloudflare_api_token = {{ cloudflare_api_token }}\n"
+
+    - name: Script qui recopie le certificat pour Geyser après chaque renouvellement
+      ansible.builtin.copy:
+        dest: "{{ base }}/bin/cert-deploy.sh"
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          # Appelé par certbot (--deploy-hook). Le proxy est rechargé la nuit par veille-proxy.sh.
+          set -eu
+          src="${RENEWED_LINEAGE:-/etc/letsencrypt/live/{{ domaine }}}"
+          dst={{ base }}/certs
+          install -m 0600 -o {{ uid_mc }} -g {{ uid_mc }} "$src/fullchain.pem" "$dst/fullchain.pem"
+          install -m 0600 -o {{ uid_mc }} -g {{ uid_mc }} "$src/privkey.pem" "$dst/privkey.pem"
+          touch "$dst/.a-recharger"
+
+    - name: Obtenir le certificat pour {{ domaine }}
+      ansible.builtin.command: >-
+        certbot certonly --non-interactive --agree-tos
+        {{ ('-m ' ~ email_letsencrypt) if email_letsencrypt | default('') | length > 0 else '--register-unsafely-without-email' }}
+        --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini
+        --dns-cloudflare-propagation-seconds 30
+        --cert-name {{ domaine }} -d {{ domaine }}
+        --deploy-hook {{ base }}/bin/cert-deploy.sh
+      args:
+        creates: /etc/letsencrypt/live/{{ domaine }}/fullchain.pem
+      register: certbot
+
+    - name: Recopier le certificat s'il manque côté Geyser
+      ansible.builtin.command: "{{ base }}/bin/cert-deploy.sh"
+      args:
+        creates: "{{ base }}/certs/fullchain.pem"
+
+    - name: Pas de rechargement nocturne nécessaire pour un tout premier certificat
+      ansible.builtin.file:
+        path: "{{ base }}/certs/.a-recharger"
+        state: absent
+      when: certbot.changed
+
+    - name: Renouvellement automatique actif
+      ansible.builtin.systemd:
+        name: certbot.timer
+        state: started
+        enabled: true

@@ -1,0 +1,7 @@
+node_modules/
+.minecraft-test/
+minecraft-launcher/dist/
+minecraft-launcher/node_modules/
+minecraft-launcher/src/.backup-*/
+minecraft-launcher/src/.backup-*/
+__pycache__/

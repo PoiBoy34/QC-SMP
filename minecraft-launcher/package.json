@@ -1,0 +1,78 @@
+{
+  "name": "lqdm-launcher",
+  "version": "1.0.0",
+  "description": "LQDM-Launcher — launcher du serveur Les Québécois De Minecraft",
+  "author": "PoiBoy34",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "/usr/bin/electron .",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder -mwl",
+    "publish:linux": "electron-builder --linux --publish always",
+    "publish:win": "electron-builder --win --publish always"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "axios": "^1.16.1",
+    "electron-log": "^5.4.4",
+    "electron-updater": "^6.3.9",
+    "extract-zip": "^2.0.1",
+    "fs-extra": "^11.3.5",
+    "minecraft-launcher-core": "^3.18.2",
+    "msmc": "^4.1.0",
+    "node-fetch": "^2.7.0",
+    "tar": "^7.5.15"
+  },
+  "devDependencies": {
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.poiboy.lqdm",
+    "productName": "LQDM-Launcher",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "PoiBoy34",
+        "repo": "QC-SMP"
+      }
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Game",
+      "desktop": {
+        "entry": {
+          "Name": "Les Québécois De Minecraft",
+          "Categories": "Game;",
+          "StartupWMClass": "lqdm-launcher"
+        }
+      },
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "shortcutName": "Les Québécois De Minecraft"
+    },
+    "asarUnpack": [
+      "bin/**"
+    ],
+    "artifactName": "${productName}-${version}.${ext}"
+  },
+  "productName": "LQDM-Launcher"
+}

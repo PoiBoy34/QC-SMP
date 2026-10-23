@@ -1,0 +1,23 @@
+# Mods du pack : un nom Modrinth par ligne (la fin de l'adresse modrinth.com/mod/<nom>).
+# Les dépendances obligatoires sont ajoutées toutes seules.
+#
+#   nom           dernière version compatible avec la version de Minecraft du pack
+#   nom?          optionnel : ignoré (avec un avertissement) s'il n'existe pas pour cette version
+#   nom==1.2.3    version figée
+#
+# Après une modification : ./publish.sh, ou modifie ce fichier directement sur GitHub,
+# le dépôt fait le reste. Les joueurs reçoivent le changement au lancement suivant.
+#
+# Règle du serveur : seulement des mods qui ne changent pas le gameplay, pour garder
+# l'égalité avec les joueurs Bedrock (consoles). Aucun item, bloc ou mécanique.
+
+# Performance
+fabric-api
+sodium
+iris
+
+# Confort
+modmenu
+
+# Tournage (replay pour les créateurs)
+flashback?

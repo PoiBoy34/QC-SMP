@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Lancé toutes les 10 minutes par mc-veille-proxy.timer :
+#  - si l'IP publique de la maison change, met à jour l'adresse NetherNet annoncée par Geyser
+#    et recrée le proxy (le changement d'IP a déjà déconnecté les joueurs de toute façon) ;
+#  - entre 4 h et 6 h, redémarre le proxy si le certificat HTTPS a été renouvelé.
+set -uo pipefail
+cd {{ base }} || exit 1
+
+ADRESSES={{ base }}/geyser-adresses.env
+FLAG={{ base }}/certs/.a-recharger
+
+ip=$(curl -4 -fsS --max-time 10 https://api.ipify.org || curl -4 -fsS --max-time 10 https://ipv4.icanhazip.com || true)
+ip=${ip//[[:space:]]/}
+if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  voulu="JVM_OPTS=-DgeyserAdvertiseAddresses=$ip,{{ vm_ip }}"
+  if [[ $(cat "$ADRESSES" 2>/dev/null) != "$voulu" ]]; then
+    echo "$voulu" >"$ADRESSES"
+    rm -f "$FLAG"
+    echo "IP publique : $ip, le proxy est recréé pour l'annoncer"
+    docker compose up -d proxy
+    exit 0
+  fi
+fi
+
+heure=$((10#$(date +%H)))
+if [[ -f $FLAG ]] && (( heure >= 4 && heure < 6 )); then
+  rm -f "$FLAG"
+  echo "Certificat renouvelé : redémarrage du proxy"
+  docker compose restart proxy
+fi

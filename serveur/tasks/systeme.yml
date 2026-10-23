@@ -1,0 +1,138 @@
+---
+# Système de base : mises à jour, SSH par clé uniquement, pare-feu, fail2ban.
+
+- name: Mettre le système à jour
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: dist
+
+- name: Paquets de base
+  ansible.builtin.apt:
+    name:
+      - qemu-guest-agent
+      - ufw
+      - fail2ban
+      - python3-systemd
+      - unattended-upgrades
+      - ca-certificates
+      - curl
+      - jq
+      - rsync
+      - openssl
+      - htop
+    state: present
+
+- name: Agent Proxmox (arrêt propre, IP visible dans l'interface)
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+
+- name: Lire le fuseau horaire
+  ansible.builtin.command: timedatectl show -p Timezone --value
+  register: tz_actuel
+  changed_when: false
+
+- name: Fuseau horaire
+  ansible.builtin.command: timedatectl set-timezone {{ fuseau }}
+  when: tz_actuel.stdout != fuseau
+
+- name: Mises à jour de sécurité automatiques
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    mode: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+
+# --- SSH : clé uniquement, pas de root, pas de mot de passe -------------------
+- name: Durcir SSH
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-durcissement.conf
+    mode: "0644"
+    content: |
+      # Géré par Ansible (mc-homelab)
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PubkeyAuthentication yes
+      AuthenticationMethods publickey
+      AllowUsers {{ vm_user }}
+      X11Forwarding no
+      MaxAuthTries 3
+      LoginGraceTime 30
+  notify: redemarrer ssh
+
+- name: Vérifier la configuration SSH avant de redémarrer le service
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+
+- name: fail2ban pour SSH
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/sshd.local
+    mode: "0644"
+    content: |
+      [sshd]
+      enabled  = true
+      backend  = systemd
+      maxretry = 5
+      bantime  = 1h
+      ignoreip = 127.0.0.1/8 {{ ansible_default_ipv4.network }}/{{ ansible_default_ipv4.prefix }}
+  notify: redemarrer fail2ban
+
+- name: fail2ban actif
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: started
+    enabled: true
+
+# --- Pare-feu ---------------------------------------------------------------
+# SSH seulement depuis le réseau local, l'hôte Proxmox et la machine qui lance Ansible
+# (évite de se bloquer dehors si tu déploies depuis un VPN). Les serveurs Paper et la
+# base de données n'écoutent que sur 127.0.0.1 : rien d'autre n'est ouvert.
+- name: Adresse de la machine qui lance Ansible
+  ansible.builtin.shell: echo "${SSH_CLIENT%% *}"
+  become: false
+  register: client_ssh
+  changed_when: false
+
+- name: Origines autorisées en SSH
+  ansible.builtin.set_fact:
+    ssh_origines: >-
+      {{ ([ansible_default_ipv4.network ~ '/' ~ ansible_default_ipv4.prefix, proxmox_ip, client_ssh.stdout]
+          | select | unique) }}
+
+- name: Ports publics du réseau Minecraft
+  ansible.builtin.set_fact:
+    ports_publics: >-
+      {{ [port_java ~ '/tcp', port_bedrock ~ '/tcp', port_bedrock ~ '/udp', port_webrtc ~ '/udp']
+         + ([xbox_ice_min ~ ':' ~ xbox_ice_max ~ '/udp'] if xbox_broadcast | bool else []) }}
+
+- name: Pare-feu — politique par défaut
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - ufw default deny incoming
+    - ufw default allow outgoing
+  changed_when: false
+
+- name: Pare-feu — SSH
+  ansible.builtin.command: ufw allow from {{ item }} to any port 22 proto tcp comment 'ssh'
+  loop: "{{ ssh_origines }}"
+  register: ufw_ssh
+  changed_when: "'Skipping' not in ufw_ssh.stdout"
+
+- name: Pare-feu — Minecraft
+  ansible.builtin.command: ufw allow {{ item }} comment 'minecraft'
+  loop: "{{ ports_publics }}"
+  register: ufw_mc
+  changed_when: "'Skipping' not in ufw_mc.stdout"
+
+- name: Pare-feu — état
+  ansible.builtin.command: ufw status
+  register: ufw_etat
+  changed_when: false
+
+- name: Pare-feu — activer
+  ansible.builtin.command: ufw --force enable
+  when: "'Status: active' not in ufw_etat.stdout"

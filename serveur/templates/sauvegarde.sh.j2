@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Sauvegarde des mondes Paper et de la base LuckPerms. Lancé chaque nuit par mc-sauvegarde.timer,
+# ou à la main : ./outils.sh sauvegarde
+set -uo pipefail
+
+DEST={{ base }}/sauvegardes
+DATE=$(date +%F_%H%M)
+GARDER_JOURS={{ sauvegarde_jours }}
+SERVEURS=({% for s in serveurs_paper %}{{ s.nom }} {% endfor %})
+echec=0
+
+rcon() { docker exec "mc-$1" rcon-cli "${@:2}" >/dev/null 2>&1; }
+
+for s in "${SERVEURS[@]}"; do
+  docker ps -q --filter "name=^mc-$s\$" | grep -q . || { echo "mc-$s arrêté, ignoré"; continue; }
+  rcon "$s" save-off
+  rcon "$s" save-all flush
+  sleep 3
+  tar -C {{ base }}/serveurs -czf "$DEST/$s-$DATE.tar.gz" \
+    --exclude='*.jar' --exclude='cache' --exclude='libraries' --exclude='versions' --exclude='logs' \
+    "$s"
+  code=$?
+  rcon "$s" save-on
+  # tar renvoie 1 quand un fichier change pendant la lecture : sans gravité ici
+  if (( code > 1 )); then echo "ERREUR : sauvegarde de $s"; echec=1; else echo "ok : $s"; fi
+done
+
+if docker exec mc-mariadb sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction luckperms' \
+    | gzip >"$DEST/luckperms-$DATE.sql.gz"; then
+  echo "ok : base LuckPerms"
+else
+  echo "ERREUR : base LuckPerms"; echec=1
+fi
+
+find "$DEST" -type f -mtime +"$GARDER_JOURS" -delete
+{% if sauvegarde_rsync | default('') | length > 0 %}
+
+# Copie hors de la VM (la clé SSH de root sur la VM doit être autorisée sur la destination)
+rsync -a --delete "$DEST/" "{{ sauvegarde_rsync }}" || { echo "ERREUR : copie hors VM"; echec=1; }
+{% endif %}
+
+exit $echec

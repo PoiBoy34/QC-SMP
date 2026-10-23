@@ -1,0 +1,11 @@
+# Les IP viennent de config.yml (passé par deploy.sh avec -e @config.yml).
+all:
+  vars:
+    ansible_ssh_private_key_file: "{{ ssh_key }}"
+  hosts:
+    proxmox:
+      ansible_host: "{{ proxmox_ip }}"
+      ansible_user: root
+    mc:
+      ansible_host: "{{ vm_ip }}"
+      ansible_user: "{{ vm_user }}"

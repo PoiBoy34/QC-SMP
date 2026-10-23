@@ -1,0 +1,169 @@
+# Généré par Ansible (mc-homelab) — ne pas modifier ici :
+# change config.yml puis relance ./deploy.sh --tags serveur
+name: minecraft
+
+services:
+  # --- Proxy : seule porte d'entrée (Java + Bedrock) -----------------------------
+  # Réseau « host » : Geyser/NetherNet (WebRTC) et MCXboxBroadcast annoncent l'IP réelle
+  # de la VM et leurs ports UDP sans passer par le NAT de Docker. Le pare-feu UFW s'applique.
+  proxy:
+    image: itzg/mc-proxy:latest
+    container_name: mc-proxy
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 1m
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      TYPE: VELOCITY
+      MEMORY: "{{ ram_proxy }}"
+      TZ: "{{ fuseau }}"
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+      PLUGINS: |
+        {{ url_geyser_velocity }}
+        {{ url_floodgate_velocity }}
+      # LuckPerms : une seule base pour tout le réseau
+      LUCKPERMS_SERVER: proxy
+      LUCKPERMS_STORAGE_METHOD: mariadb
+      LUCKPERMS_DATA_ADDRESS: 127.0.0.1:3306
+      LUCKPERMS_DATA_DATABASE: luckperms
+      LUCKPERMS_DATA_USERNAME: luckperms
+      LUCKPERMS_DATA_PASSWORD: ${LP_DB_PASSWORD}
+      LUCKPERMS_MESSAGING_SERVICE: sql
+      # Geyser — NetherNet (Bedrock 26.60, 27 octobre 2026)
+      GEYSER_BEDROCK_PORT: "{{ port_bedrock }}"
+      GEYSER_BEDROCK_TRANSPORT: "{{ geyser_transport }}"
+      GEYSER_BEDROCK_WEBRTC_PORT: "{{ port_webrtc }}"
+      GEYSER_BEDROCK_SIGNALING_MODE: builtin
+      GEYSER_MOTD_PRIMARY_MOTD: "{{ nom_projet }}"
+      GEYSER_MOTD_SECONDARY_MOTD: "{{ nom_projet }}"
+      GEYSER_GAMEPLAY_SERVER_NAME: "{{ nom_projet }}"
+{% if https_actif | bool %}
+      GEYSER_BEDROCK_SIGNALING_BUILTIN_HTTPS_CERTIFICATE: /certs/fullchain.pem
+      GEYSER_BEDROCK_SIGNALING_BUILTIN_HTTPS_PRIVATE_KEY: /certs/privkey.pem
+{% endif %}
+    # Adresses annoncées aux consoles pour la connexion NetherNet (WebRTC) : l'IP publique
+    # (joueurs d'Internet) et l'IP locale (joueurs à la maison, en direct sur le réseau local).
+    # Tenu à jour par bin/veille-proxy.sh quand l'IP de la maison change.
+    env_file: [{{ base }}/geyser-adresses.env]
+    volumes:
+      - {{ base }}/proxy:/server
+      - {{ base }}/certs:/certs:ro
+
+  # --- Base de données LuckPerms (rangs partagés par tous les serveurs) -----------
+  mariadb:
+    image: mariadb:11.4
+    container_name: mc-mariadb
+    restart: unless-stopped
+    environment:
+      TZ: "{{ fuseau }}"
+      MARIADB_DATABASE: luckperms
+      MARIADB_USER: luckperms
+      MARIADB_PASSWORD: ${LP_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - {{ base }}/mariadb:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3306:3306"   # pour le proxy (réseau host) seulement
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks: [interne]
+
+{% for s in serveurs_paper %}
+  # --- {{ s.nom }} ({{ s.type }}) — joignable seulement via le proxy -------------------
+  {{ s.nom }}:
+    image: itzg/minecraft-server:stable
+    container_name: mc-{{ s.nom }}
+    restart: unless-stopped
+    stop_grace_period: 2m
+    tty: true
+    stdin_open: true
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      EULA: "TRUE"
+      TYPE: PAPER
+      VERSION: "{{ mc_version }}"
+      MEMORY: "{{ s.ram }}"
+      TZ: "{{ fuseau }}"
+      USE_AIKAR_FLAGS: "true"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+      MOTD: "{{ nom_projet }} — {{ s.nom }}"
+      # Velocity authentifie les joueurs et transmet leur identité (forwarding moderne)
+      ONLINE_MODE: "FALSE"
+      ENFORCE_SECURE_PROFILE: "FALSE"
+      ENABLE_WHITELIST: "TRUE"
+      ENFORCE_WHITELIST: "TRUE"
+{% if admins_java | length > 0 %}
+      OPS: "{{ admins_java | join(',') }}"
+{% endif %}
+      PLUGINS: {{ url_floodgate_paper }}
+      MODRINTH_PROJECTS: "{{ modrinth_par_type[s.type] }}"
+      LUCKPERMS_SERVER: {{ s.nom }}
+      LUCKPERMS_STORAGE_METHOD: mariadb
+      LUCKPERMS_DATA_ADDRESS: mariadb:3306
+      LUCKPERMS_DATA_DATABASE: luckperms
+      LUCKPERMS_DATA_USERNAME: luckperms
+      LUCKPERMS_DATA_PASSWORD: ${LP_DB_PASSWORD}
+      LUCKPERMS_MESSAGING_SERVICE: sql
+{% if s.type == 'spawn' %}
+      # Carrefour : pas de dégâts de mobs, pas de faim, pas de casse (aventure)
+      MODE: adventure
+      DIFFICULTY: peaceful
+      PVP: "false"
+      LEVEL_TYPE: FLAT
+      GENERATE_STRUCTURES: "false"
+      SPAWN_MONSTERS: "false"
+      SPAWN_PROTECTION: "0"
+      VIEW_DISTANCE: "8"
+{% elif s.type == 'smp' %}
+      MODE: survival
+      DIFFICULTY: normal
+      VIEW_DISTANCE: "10"
+      SIMULATION_DISTANCE: "8"
+{% else %}
+      MODE: adventure
+      DIFFICULTY: normal
+      LEVEL_TYPE: FLAT
+      GENERATE_STRUCTURES: "false"
+      SPAWN_MONSTERS: "false"
+      ALLOW_NETHER: "false"
+      VIEW_DISTANCE: "8"
+{% endif %}
+    volumes:
+      - {{ base }}/serveurs/{{ s.nom }}:/data
+      - {{ base }}/partage/whitelist.json:/data/whitelist.json
+    ports:
+      - "127.0.0.1:{{ s.port }}:25565"
+    networks: [interne]
+
+{% endfor %}
+{% if https_actif | bool %}
+  # --- DNS dynamique : garde {{ domaine }} pointé sur l'IP de la maison ------------
+  ddns:
+    image: favonia/cloudflare-ddns:latest
+    container_name: mc-ddns
+    restart: unless-stopped
+    user: "{{ uid_mc }}:{{ uid_mc }}"
+    read_only: true
+    cap_drop: [all]
+    security_opt: [no-new-privileges:true]
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN}
+      DOMAINS: "{{ domaine }}"
+      PROXIED: "false"         # nuage gris obligatoire : le jeu va en direct, sans détour par Cloudflare
+      TTL: "60"                # minimum Cloudflare : les joueurs suivent vite un changement d'IP
+      UPDATE_CRON: "@every 1m"
+      IP6_PROVIDER: none       # pas d'AAAA : un IPv6 mal ouvert ferait patienter les clients
+    networks: [interne]
+
+{% endif %}
+networks:
+  interne: {}

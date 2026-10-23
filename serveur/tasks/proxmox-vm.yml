@@ -1,0 +1,180 @@
+---
+# Crée la VM Debian 13 (image cloud + cloud-init) si elle n'existe pas encore.
+# Ne supprime ni ne modifie jamais une VM existante.
+
+- name: Vérifier que la cible est bien un hôte Proxmox
+  ansible.builtin.command: pveversion
+  changed_when: false
+
+- name: Détecter le réseau et les ressources de l'hôte
+  ansible.builtin.shell: |
+    set -euo pipefail
+    gw=$(ip -4 route show default | awk '{print $3; exit}')
+    cidr=$(ip -4 -o addr show dev {{ vm_bridge }} | awk '{split($4, a, "/"); print a[2]; exit}')
+    dns=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf)
+    printf '{"gw":"%s","cidr":"%s","dns":"%s","cpus":%s,"ram_mb":%s}\n' \
+      "$gw" "$cidr" "$dns" "$(nproc)" "$(free -m | awk '/^Mem:/ {print $2}')"
+  args:
+    executable: /bin/bash
+  register: detection
+  changed_when: false
+
+- name: Lister les stockages qui acceptent des disques de VM
+  ansible.builtin.shell: pvesm status --content images | awk 'NR > 1 && $3 == "active" {print $1}'
+  register: stockages
+  changed_when: false
+
+- name: Calculer les paramètres de la VM
+  ansible.builtin.set_fact:
+    hote: "{{ detection.stdout | from_json }}"
+    stockage: >-
+      {{ vm_storage if (vm_storage | default('') | length > 0)
+         else ((['local-lvm', 'local-zfs'] | intersect(stockages.stdout_lines)) + stockages.stdout_lines) | first | default('') }}
+
+- name: Calculer les paramètres réseau de la VM
+  ansible.builtin.set_fact:
+    vm_gateway_eff: "{{ vm_gateway | default(hote.gw, true) }}"
+    vm_cidr_eff: "{{ vm_cidr | default(hote.cidr, true) }}"
+    vm_dns_eff: "{{ vm_dns | default(hote.dns, true) }}"
+    vm_cores_eff: "{{ [vm_cores | int, hote.cpus | int] | min }}"
+
+- name: Vérifier les paramètres détectés
+  ansible.builtin.assert:
+    that:
+      - vm_gateway_eff | length > 0
+      - vm_cidr_eff | string | length > 0
+      - stockage | length > 0
+    fail_msg: >-
+      Détection incomplète (passerelle « {{ vm_gateway_eff }} », masque « {{ vm_cidr_eff }} »
+      sur {{ vm_bridge }}, stockage « {{ stockage }} »). Renseigne vm_gateway / vm_cidr /
+      vm_bridge / vm_storage dans config.yml.
+    quiet: true
+
+- name: Prévenir si la VM demande trop de mémoire pour l'hôte
+  ansible.builtin.debug:
+    msg: >-
+      ATTENTION : la VM demande {{ vm_memory_mb }} Mo et l'hôte n'a que {{ hote.ram_mb }} Mo.
+      Baisse vm_memory_mb et les ram_* dans config.yml si la VM ne démarre pas.
+  when: (vm_memory_mb | int) > (hote.ram_mb | int) * 0.85
+
+- name: La VM existe-t-elle déjà ?
+  ansible.builtin.command: qm config {{ vm_id }}
+  register: vm_existante
+  failed_when: false
+  changed_when: false
+
+- name: Refuser de toucher une VM qui n'est pas la nôtre
+  ansible.builtin.assert:
+    that: "('name: ' ~ vm_name) in vm_existante.stdout"
+    fail_msg: "L'ID {{ vm_id }} est déjà pris par une autre VM. Choisis un autre vm_id dans config.yml."
+    quiet: true
+  when: vm_existante.rc == 0
+
+- name: Création de la VM
+  when: vm_existante.rc != 0
+  block:
+    - name: Vérifier que l'IP {{ vm_ip }} est libre
+      ansible.builtin.command: ping -c 2 -W 1 {{ vm_ip }}
+      register: ping_ip
+      changed_when: false
+      failed_when: ping_ip.rc == 0
+
+    - name: Dossier des images
+      ansible.builtin.file:
+        path: /var/lib/vz/template/cache
+        state: directory
+        mode: "0755"
+
+    - name: Télécharger l'image Debian 13 (vérifiée par SHA512)
+      ansible.builtin.get_url:
+        url: "{{ debian_image_url }}"
+        dest: /var/lib/vz/template/cache/{{ debian_image_url | basename }}
+        checksum: sha512:{{ debian_image_url | dirname }}/SHA512SUMS
+        mode: "0644"
+
+    - name: Déposer la clé publique pour cloud-init
+      ansible.builtin.copy:
+        src: "{{ ssh_key }}.pub"
+        dest: /root/.mc-vm-cle.pub
+        mode: "0600"
+
+    - name: Créer, agrandir et démarrer la VM {{ vm_id }}
+      ansible.builtin.shell: |
+        set -euo pipefail
+        qm create {{ vm_id }} \
+          --name {{ vm_name }} --ostype l26 --tags minecraft \
+          --cpu host --sockets 1 --cores {{ vm_cores_eff }} \
+          --memory {{ vm_memory_mb }} --balloon 0 \
+          --scsihw virtio-scsi-single \
+          --scsi0 {{ stockage }}:0,import-from=/var/lib/vz/template/cache/{{ debian_image_url | basename }},discard=on,ssd=1,iothread=1 \
+          --boot order=scsi0 \
+          --ide2 {{ stockage }}:cloudinit \
+          --net0 virtio,bridge={{ vm_bridge }} \
+          --serial0 socket --vga serial0 \
+          --agent enabled=1,fstrim_cloned_disks=1 \
+          --onboot 1 \
+          --ciuser {{ vm_user }} --sshkeys /root/.mc-vm-cle.pub \
+          --ipconfig0 ip={{ vm_ip }}/{{ vm_cidr_eff }},gw={{ vm_gateway_eff }} \
+          --nameserver {{ vm_dns_eff }}
+        qm disk resize {{ vm_id }} scsi0 {{ vm_disk_gb }}G
+        qm start {{ vm_id }}
+      args:
+        executable: /bin/bash
+
+    - name: Oublier une ancienne empreinte SSH pour {{ vm_ip }} (VM recréée)
+      ansible.builtin.command: ssh-keygen -R {{ vm_ip }}
+      delegate_to: localhost
+      become: false
+      changed_when: false
+      failed_when: false
+
+- name: Démarrer la VM si elle est arrêtée
+  ansible.builtin.shell: qm status {{ vm_id }} | grep -q running || qm start {{ vm_id }}
+  register: demarrage
+  changed_when: false
+  when: vm_existante.rc == 0
+
+- name: Attendre que SSH réponde sur la VM
+  ansible.builtin.wait_for:
+    host: "{{ vm_ip }}"
+    port: 22
+    timeout: 300
+  delegate_to: localhost
+  become: false
+
+# Le lag Minecraft vient surtout de la vitesse d'un cœur : le CPU monte tout de suite à pleine
+# fréquence au lieu d'accélérer par paliers. Il se met toujours en veille quand il n'a rien à faire.
+- name: Gouverneur CPU « performance » sur l'hôte
+  when: proxmox_cpu_performance | default(true) | bool
+  block:
+    - name: Service qui applique le gouverneur à chaque démarrage
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mc-cpu-performance.service
+        mode: "0644"
+        content: |
+          [Unit]
+          Description=Gouverneur CPU performance (mc-homelab)
+          ConditionPathExists=/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          ExecStart=/bin/sh -c 'for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > "$$g"; done'
+
+          [Install]
+          WantedBy=multi-user.target
+      register: unite_cpu
+
+    - name: Activer le gouverneur performance
+      ansible.builtin.systemd:
+        name: mc-cpu-performance.service
+        enabled: true
+        state: "{{ 'restarted' if unite_cpu.changed else 'started' }}"
+        daemon_reload: true
+
+- name: Résumé VM
+  ansible.builtin.debug:
+    msg: >-
+      VM {{ vm_id }} « {{ vm_name }} » : {{ vm_cores_eff }} cœurs, {{ vm_memory_mb }} Mo,
+      disque {{ vm_disk_gb }} Go sur {{ stockage }}, IP {{ vm_ip }}/{{ vm_cidr_eff }}
+      via {{ vm_gateway_eff }}.

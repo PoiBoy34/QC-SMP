@@ -1,0 +1,31 @@
+# Constantes internes. Les réglages à modifier sont dans config.yml.
+
+base: /opt/minecraft
+cloudflare_api_token: ""     # défini dans secrets.yml
+uid_mc: 1000                 # uid utilisé par les images itzg (= premier utilisateur de la VM)
+
+debian_image_url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2
+
+# Ports publics (à rediriger sur le routeur vers la VM)
+port_java: 25565
+port_bedrock: 19132          # UDP = RakNet, TCP = signalisation NetherNet
+port_webrtc: 19133           # UDP = connexions NetherNet (WebRTC)
+xbox_ice_min: 19140          # UDP = connexions « Rejoindre un ami » de MCXboxBroadcast
+xbox_ice_max: 19149
+
+# Ports internes (127.0.0.1 seulement)
+port_spawn: 25566
+port_smp: 25567
+port_premier_minijeu: 25570
+
+url_geyser_velocity: https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/velocity
+url_floodgate_velocity: https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/velocity
+url_floodgate_paper: https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
+url_mcxboxbroadcast: https://github.com/MCXboxBroadcast/Broadcaster/releases/latest/download/MCXboxBroadcastExtension.jar
+
+# Plugins Paper par type de serveur (Modrinth). Le « ? » rend le plugin optionnel :
+# s'il n'existe pas encore pour la version de Minecraft, le serveur démarre quand même.
+modrinth_par_type:
+  spawn: "luckperms?,fancynpcs?,fastasyncworldedit?,viaversion?"
+  smp: "luckperms?,coreprotect?,viaversion?,chunky?"   # chunky : pré-génération du monde
+  minijeu: "luckperms?,skbee?,viaversion?"

@@ -1,0 +1,58 @@
+---
+# Lancé par ./deploy.sh (qui ajoute -e @config.yml et la clé SSH).
+
+- name: Proxmox — créer la VM Minecraft
+  hosts: proxmox
+  gather_facts: false
+  tags: [proxmox]
+  tasks:
+    - ansible.builtin.import_tasks: tasks/proxmox-vm.yml
+
+- name: VM — sécurité, Docker et réseau Minecraft
+  hosts: mc
+  gather_facts: false
+  become: true
+  tags: [serveur]
+  handlers:
+    - name: redemarrer ssh
+      ansible.builtin.systemd:
+        name: ssh
+        state: restarted
+
+    - name: redemarrer fail2ban
+      ansible.builtin.systemd:
+        name: fail2ban
+        state: restarted
+
+    - name: recharger systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: redemarrer docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
+
+    - name: redemarrer proxy
+      ansible.builtin.command: docker compose restart proxy
+      args:
+        chdir: "{{ base }}"
+
+  tasks:
+    - name: Attendre que la VM réponde en SSH
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Attendre la fin du premier démarrage (cloud-init)
+      ansible.builtin.command: cloud-init status --wait
+      register: cloud_init
+      changed_when: false
+      failed_when: cloud_init.rc not in [0, 2]   # 2 = terminé avec avertissements
+
+    - name: Collecter les informations de la VM
+      ansible.builtin.setup:
+
+    - ansible.builtin.import_tasks: tasks/systeme.yml
+    - ansible.builtin.import_tasks: tasks/docker.yml
+    - ansible.builtin.import_tasks: tasks/https.yml
+    - ansible.builtin.import_tasks: tasks/minecraft.yml

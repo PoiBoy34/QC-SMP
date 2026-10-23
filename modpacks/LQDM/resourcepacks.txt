@@ -1,0 +1,5 @@
+# Resource packs pris sur Modrinth, un nom par ligne (modrinth.com/resourcepack/<nom>).
+# Même syntaxe que mods.txt. Ils sont activés automatiquement par le launcher.
+#
+# Le resource pack du serveur (fait maison) ne va pas ici : dépose son .zip dans
+# modpacks/LQDM/resourcepacks/ puis lance ./publish.sh.

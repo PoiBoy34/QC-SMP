@@ -1,0 +1,395 @@
+---
+# Réseau Minecraft : Velocity + Geyser/Floodgate devant des serveurs Paper isolés.
+
+# --- Liste des serveurs ---------------------------------------------------------
+- name: Vérifier les noms des mini-jeux
+  ansible.builtin.assert:
+    that:
+      - item.nom is match('^[a-z0-9][a-z0-9-]*$')
+      - item.nom not in ['proxy', 'spawn', 'smp', 'mariadb', 'ddns']
+    fail_msg: "Nom de mini-jeu invalide : « {{ item.nom }} » (minuscules, chiffres et tirets seulement)."
+    quiet: true
+  loop: "{{ minijeux }}"
+
+- name: Serveurs Paper fixes
+  ansible.builtin.set_fact:
+    serveurs_paper:
+      - { nom: spawn, type: spawn, port: "{{ port_spawn }}", ram: "{{ ram_spawn }}" }
+      - { nom: smp, type: smp, port: "{{ port_smp }}", ram: "{{ ram_smp }}" }
+
+- name: Ajouter les mini-jeux
+  ansible.builtin.set_fact:
+    serveurs_paper: >-
+      {{ serveurs_paper + [{'nom': item.nom, 'type': 'minijeu',
+                            'port': port_premier_minijeu | int + idx,
+                            'ram': item.ram | default('1536M')}] }}
+  loop: "{{ minijeux }}"
+  loop_control:
+    index_var: idx
+
+# --- Dossiers -------------------------------------------------------------------
+- name: Dossiers du réseau
+  ansible.builtin.file:
+    path: "{{ base }}/{{ item }}"
+    state: directory
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0750"
+  loop:
+    - secrets
+    - partage
+    - sauvegardes
+    - serveurs
+    - proxy
+    - proxy/plugins
+    - proxy/plugins/Geyser-Velocity
+    - proxy/plugins/Geyser-Velocity/extensions
+
+- name: Dossier de la base de données (géré par l'image MariaDB)
+  ansible.builtin.file:
+    path: "{{ base }}/mariadb"
+    state: directory
+    mode: "0750"
+
+- name: Dossiers des serveurs Paper
+  ansible.builtin.file:
+    path: "{{ base }}/serveurs/{{ item.0.nom }}{{ item.1 }}"
+    state: directory
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0750"
+  loop: "{{ serveurs_paper | product(['', '/config', '/plugins', '/plugins/floodgate']) | list }}"
+  loop_control:
+    label: "{{ item.0.nom }}{{ item.1 }}"
+
+# --- Secrets (générés une seule fois, restent sur la VM) -------------------------
+- name: Générer les secrets
+  ansible.builtin.shell: umask 077 && openssl rand -hex 24 > {{ base }}/secrets/{{ item }}
+  args:
+    creates: "{{ base }}/secrets/{{ item }}"
+  loop: [forwarding, rcon, db_root, db_luckperms]
+
+- name: Lire les secrets
+  ansible.builtin.slurp:
+    src: "{{ base }}/secrets/{{ item }}"
+  loop: [forwarding, rcon, db_root, db_luckperms]
+  register: secrets_lus
+  no_log: true
+
+- name: Secrets disponibles pour les gabarits
+  ansible.builtin.set_fact:
+    secret: >-
+      {{ dict(secrets_lus.results | map(attribute='item')
+              | zip(secrets_lus.results | map(attribute='content') | map('b64decode') | map('trim'))) }}
+  no_log: true
+
+# --- Fichiers de configuration --------------------------------------------------
+- name: Variables secrètes de docker compose (.env)
+  ansible.builtin.copy:
+    dest: "{{ base }}/.env"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0600"
+    content: |
+      RCON_PASSWORD={{ secret.rcon }}
+      DB_ROOT_PASSWORD={{ secret.db_root }}
+      LP_DB_PASSWORD={{ secret.db_luckperms }}
+      CLOUDFLARE_API_TOKEN={{ cloudflare_api_token | default('') }}
+  no_log: true
+
+- name: docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ base }}/docker-compose.yml"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+
+- name: Velocity — velocity.toml
+  ansible.builtin.template:
+    src: velocity.toml.j2
+    dest: "{{ base }}/proxy/velocity.toml"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+  notify: redemarrer proxy
+
+- name: Velocity — secret de transfert vers les serveurs Paper
+  ansible.builtin.copy:
+    dest: "{{ base }}/proxy/forwarding.secret"
+    content: "{{ secret.forwarding }}"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0600"
+  no_log: true
+  notify: redemarrer proxy
+
+# Fichier partiel : Paper ajoute toutes les autres options au premier démarrage.
+- name: Paper — accepter uniquement les joueurs envoyés par Velocity
+  ansible.builtin.copy:
+    dest: "{{ base }}/serveurs/{{ item.nom }}/config/paper-global.yml"
+    force: false
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+    content: |
+      proxies:
+        velocity:
+          enabled: true
+          online-mode: true
+          secret: '{{ secret.forwarding }}'
+  loop: "{{ serveurs_paper }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  no_log: true
+
+- name: Liste blanche partagée par tous les serveurs Paper
+  ansible.builtin.copy:
+    dest: "{{ base }}/partage/whitelist.json"
+    content: "[]\n"
+    force: false
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+
+# --- Plugins qui ne passent pas par les variables des images itzg ---------------
+- name: LuckPerms pour Velocity — dernière version (Modrinth)
+  ansible.builtin.uri:
+    url: https://api.modrinth.com/v2/project/luckperms/version?loaders=%5B%22velocity%22%5D
+    headers:
+      User-Agent: mc-homelab-deploy
+    return_content: true
+  register: lp_versions
+
+- name: LuckPerms pour Velocity — téléchargement
+  vars:
+    lp: "{{ lp_versions.json | selectattr('version_type', 'equalto', 'release') | first }}"
+  ansible.builtin.get_url:
+    url: "{{ ((lp.files | selectattr('primary') | list) + lp.files) | map(attribute='url') | first }}"
+    dest: "{{ base }}/proxy/plugins/LuckPerms-Velocity.jar"
+    force: true
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+
+- name: Skript pour les mini-jeux — dernière version (GitHub)
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/SkriptLang/Skript/releases/latest
+    return_content: true
+  register: skript_release
+  when: minijeux | length > 0
+
+- name: Skript pour les mini-jeux — téléchargement
+  ansible.builtin.get_url:
+    url: >-
+      {{ skript_release.json.assets | selectattr('name', 'match', '^Skript.*[.]jar$')
+         | rejectattr('name', 'search', 'sources|javadoc') | map(attribute='browser_download_url') | first }}
+    dest: "{{ base }}/serveurs/{{ item.nom }}/plugins/Skript.jar"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'minijeu') }}"
+  loop_control:
+    label: "{{ item.nom }}"
+
+- name: MCXboxBroadcast — extension Geyser (onglet Amis des consoles)
+  ansible.builtin.get_url:
+    url: "{{ url_mcxboxbroadcast }}"
+    dest: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/MCXboxBroadcastExtension.jar"
+    force: true   # suit les mises à jour Bedrock : retéléchargé à chaque déploiement
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  when: xbox_broadcast | bool
+  notify: redemarrer proxy
+
+# --- Adresses NetherNet ---------------------------------------------------------
+# Geyser annonce une IP, pas le domaine : pas d'attente du DNS au premier démarrage,
+# et un DNS local (play.domaine → IP locale) à la maison ne peut pas fausser l'annonce.
+- name: IP publique de la maison  # noqa: command-instead-of-module (deux services de secours)
+  ansible.builtin.shell: curl -4 -fsS --max-time 10 https://api.ipify.org || curl -4 -fsS --max-time 10 https://ipv4.icanhazip.com
+  register: ip_publique
+  changed_when: false
+  failed_when: ip_publique.stdout is not match('^[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+$')
+
+- name: Adresses NetherNet annoncées (IP publique + IP locale), tenues à jour par veille-proxy.sh
+  ansible.builtin.copy:
+    dest: "{{ base }}/geyser-adresses.env"
+    content: "JVM_OPTS=-DgeyserAdvertiseAddresses={{ ip_publique.stdout }},{{ vm_ip }}\n"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+
+# --- Démarrage ------------------------------------------------------------------
+- name: Télécharger les images Docker
+  ansible.builtin.command: docker compose pull --quiet
+  args:
+    chdir: "{{ base }}"
+  changed_when: false
+
+- name: Démarrer / mettre à jour le réseau
+  ansible.builtin.command: docker compose up -d --remove-orphans
+  args:
+    chdir: "{{ base }}"
+  register: compose_up
+  changed_when: compose_up.stderr is search('Created|Recreated|Started')
+
+# --- Réglages qui n'existent qu'après le premier démarrage ----------------------
+- name: Attendre que Floodgate ait généré sa config et sa clé (1er démarrage = plusieurs minutes)
+  ansible.builtin.wait_for:
+    path: "{{ base }}/proxy/plugins/floodgate/{{ item }}"
+    timeout: 900
+  loop: [config.yml, key.pem]
+
+- name: Floodgate — transmettre les infos Bedrock aux serveurs Paper
+  ansible.builtin.replace:
+    path: "{{ base }}/proxy/plugins/floodgate/config.yml"
+    regexp: '^send-floodgate-data: false'
+    replace: 'send-floodgate-data: true'
+  notify: redemarrer proxy
+
+- name: Floodgate — même clé sur tous les serveurs
+  ansible.builtin.copy:
+    src: "{{ base }}/proxy/plugins/floodgate/key.pem"
+    dest: "{{ base }}/serveurs/{{ item.nom }}/plugins/floodgate/key.pem"
+    remote_src: true
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0600"
+  loop: "{{ serveurs_paper }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  register: cles_floodgate
+
+- name: Redémarrer les serveurs Paper qui viennent de recevoir la clé
+  ansible.builtin.command: docker compose restart {{ item.item.nom }}
+  args:
+    chdir: "{{ base }}"
+  loop: "{{ cles_floodgate.results }}"
+  loop_control:
+    label: "{{ item.item.nom }}"
+  when: item.changed
+
+- name: MCXboxBroadcast — réglages réseau
+  when: xbox_broadcast | bool
+  block:
+    - name: Attendre la config de MCXboxBroadcast
+      ansible.builtin.wait_for:
+        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
+        timeout: 300
+
+    - name: MCXboxBroadcast — plage de ports UDP fixe (pour la redirection du routeur)
+      ansible.builtin.replace:
+        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
+        regexp: '(ice-port-range:\n(?:[ \t]*#.*\n|[ \t]*max:.*\n)*[ \t]*min:)[ \t]*\d+'
+        replace: '\g<1> {{ xbox_ice_min }}'
+      notify: redemarrer proxy
+
+    - name: MCXboxBroadcast — plage de ports UDP fixe (fin)
+      ansible.builtin.replace:
+        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
+        regexp: '(ice-port-range:\n(?:[ \t]*#.*\n|[ \t]*min:.*\n)*[ \t]*max:)[ \t]*\d+'
+        replace: '\g<1> {{ xbox_ice_max }}'
+      notify: redemarrer proxy
+
+    - name: MCXboxBroadcast — annoncer le domaine plutôt que l'IP du moment
+      ansible.builtin.replace:
+        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
+        regexp: '^([ \t]*remote-address:).*$'
+        replace: '\g<1> {{ domaine }}'
+      when: domaine | default('') | length > 0
+      notify: redemarrer proxy
+
+# --- Sauvegardes et surveillance ------------------------------------------------
+- name: Scripts de maintenance
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ base }}/bin/{{ item }}"
+    mode: "0755"
+  loop: [sauvegarde.sh, veille-proxy.sh]
+
+- name: Tâches planifiées (systemd)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/{{ item.nom }}
+    mode: "0644"
+    content: "{{ item.contenu }}"
+  loop:
+    - nom: mc-sauvegarde.service
+      contenu: |
+        [Unit]
+        Description=Sauvegarde des mondes Minecraft
+        [Service]
+        Type=oneshot
+        ExecStart={{ base }}/bin/sauvegarde.sh
+    - nom: mc-sauvegarde.timer
+      contenu: |
+        [Unit]
+        Description=Sauvegarde quotidienne des mondes Minecraft
+        [Timer]
+        OnCalendar=*-*-* {{ sauvegarde_heure }}:00
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+    - nom: mc-veille-proxy.service
+      contenu: |
+        [Unit]
+        Description=Recharge le proxy si l'IP publique ou le certificat a changé
+        [Service]
+        Type=oneshot
+        ExecStart={{ base }}/bin/veille-proxy.sh
+    - nom: mc-veille-proxy.timer
+      contenu: |
+        [Unit]
+        Description=Vérification du proxy toutes les 10 minutes
+        [Timer]
+        OnBootSec=5min
+        OnUnitActiveSec=10min
+        [Install]
+        WantedBy=timers.target
+  loop_control:
+    label: "{{ item.nom }}"
+  notify: recharger systemd
+
+- name: Prendre en compte les nouvelles tâches planifiées
+  ansible.builtin.meta: flush_handlers
+
+- name: Activer les tâches planifiées
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: [mc-sauvegarde.timer, mc-veille-proxy.timer]
+
+# --- Vérification finale --------------------------------------------------------
+- name: Attendre que le proxy écoute (Java)
+  ansible.builtin.wait_for:
+    port: "{{ port_java }}"
+    timeout: 300
+
+- name: Attendre que Geyser écoute (signalisation NetherNet, TCP)
+  ansible.builtin.wait_for:
+    port: "{{ port_bedrock }}"
+    timeout: 300
+
+- name: État NetherNet vu par Geyser
+  ansible.builtin.command: docker exec mc-proxy rcon-cli "geyser nethernet status"
+  register: nethernet
+  changed_when: false
+  failed_when: false
+
+- name: Code de connexion Xbox (MCXboxBroadcast, à faire une seule fois)
+  ansible.builtin.shell: docker logs mc-proxy 2>&1 | grep -o 'enter the code [A-Z0-9]*' | tail -n 1 | awk '{print $4}'
+  register: code_xbox
+  changed_when: false
+  failed_when: false
+  when: xbox_broadcast | bool
+
+- name: Résumé
+  ansible.builtin.debug:
+    msg:
+      - "Réseau démarré. Java : {{ domaine | default('', true) or vm_ip }}:{{ port_java }}   Bedrock : {{ domaine | default('', true) or vm_ip }}:{{ port_bedrock }}"
+      - "HTTPS NetherNet : {{ 'actif (' ~ domaine ~ ')' if https_actif | bool else 'NON (les consoles verront « faire confiance ? »)' }}"
+      - "Transport Geyser : {{ geyser_transport }}   Adresses NetherNet annoncées : {{ ip_publique.stdout }}, {{ vm_ip }}"
+      - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
+      - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"
+      - "{{ ('Compte Xbox : ouvre https://www.microsoft.com/link, entre le code ' ~ code_xbox.stdout ~ ' et connecte le compte Xbox DÉDIÉ') if (code_xbox.stdout | default('') | length > 0) else 'Compte Xbox : aucun code en attente (déjà connecté ou désactivé), voir ./outils.sh xbox' }}"

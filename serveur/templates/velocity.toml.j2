@@ -1,0 +1,47 @@
+# Généré par Ansible (mc-homelab) — modifier templates/velocity.toml.j2 puis relancer le déploiement.
+config-version = "2.7"
+
+bind = "0.0.0.0:{{ port_java }}"
+motd = "<#3f9ae0>{{ nom_projet }}"
+show-max-players = 50
+online-mode = true
+force-key-authentication = true
+prevent-client-proxy-connections = false
+# Les serveurs Paper n'acceptent que les joueurs signés avec ce secret
+player-info-forwarding-mode = "modern"
+forwarding-secret-file = "forwarding.secret"
+announce-forge = false
+kick-existing-players = false
+ping-passthrough = "DISABLED"
+enable-player-address-logging = true
+
+[servers]
+{% for s in serveurs_paper %}
+{{ s.nom }} = "127.0.0.1:{{ s.port }}"
+{% endfor %}
+# Tout le monde arrive au spawn
+try = ["spawn"]
+
+[forced-hosts]
+
+[advanced]
+compression-threshold = 256
+compression-level = -1
+login-ratelimit = 3000
+connection-timeout = 5000
+read-timeout = 30000
+haproxy-protocol = false
+tcp-fast-open = false
+bungee-plugin-message-channel = true
+show-ping-requests = false
+failover-on-unexpected-server-disconnect = true
+announce-proxy-commands = true
+log-command-executions = true
+log-player-connections = true
+accepts-transfers = false
+
+[query]
+enabled = false
+port = {{ port_java }}
+map = "Velocity"
+show-plugins = false

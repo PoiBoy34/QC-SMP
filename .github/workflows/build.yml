@@ -1,0 +1,76 @@
+name: Build & release
+
+# Se déclenche quand tu pousses un tag de version (v1.0.0, v1.0.1, ...)
+# ou manuellement depuis l'onglet Actions.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: minecraft-launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx electron-builder --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # --- Signature Windows (Azure Artifact Signing) -----------------
+          # Décommente ces trois lignes le jour où tu as un compte de
+          # signature, et ajoute azureSignOptions dans package.json.
+          # AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          # AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          # AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+  # Les deux runners publient dans la même release brouillon, et Linux finit environ
+  # une minute avant Windows. On ne la rend publique qu'une fois les 5 fichiers présents :
+  # publiée trop tôt, la release ne laisse plus au .exe d'endroit où atterrir.
+  publier:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Vérifier les 5 fichiers puis publier la release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          attendus=(
+            "LQDM-Launcher-Setup-$version.exe"
+            "LQDM-Launcher-Setup-$version.exe.blockmap"
+            "latest.yml"
+            "LQDM-Launcher-$version.AppImage"
+            "latest-linux.yml"
+          )
+          presents=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          manque=0
+          for f in "${attendus[@]}"; do
+            if grep -qxF "$f" <<<"$presents"; then echo "ok : $f"; else echo "MANQUE : $f"; manque=1; fi
+          done
+          if [ "$manque" != 0 ]; then
+            echo "::error::Release laissée en brouillon : il manque des fichiers."
+            exit 1
+          fi
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          echo "Release $TAG publiée : les launchers installés vont proposer la mise à jour."
