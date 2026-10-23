@@ -1,0 +1,108 @@
+{
+  "_info": "Généré par outils/modrinth.py à partir des listes .txt : ne pas modifier à la main.",
+  "minecraft": "26.3",
+  "loader": "fabric",
+  "mods": [
+    {
+      "slug": "fabric-api",
+      "titre": "Fabric API",
+      "projet": "P7dR8mSH",
+      "version": "0.165.0+26.3",
+      "version_id": "EQKgpeKu",
+      "name": "fabric-api-0.165.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/EQKgpeKu/fabric-api-0.165.0%2B26.3.jar",
+      "sha1": "8f8a23d6c9fbf7b075b31b4fb0a1007b0488d1d2",
+      "size": 1778588,
+      "requiert": [],
+      "auto": false
+    },
+    {
+      "slug": "flashback",
+      "titre": "Flashback",
+      "projet": "4das1Fjq",
+      "version": "0.43.6",
+      "version_id": "cV1pa0YV",
+      "name": "Flashback-0.43.6-for-MC26.3.jar",
+      "url": "https://cdn.modrinth.com/data/4das1Fjq/versions/cV1pa0YV/Flashback-0.43.6-for-MC26.3.jar",
+      "sha1": "4fd7d2d677332f58b00107b27615379eadc6cfcb",
+      "size": 201008177,
+      "requiert": [
+        "P7dR8mSH"
+      ],
+      "auto": false
+    },
+    {
+      "slug": "iris",
+      "titre": "Iris Shaders",
+      "projet": "YL57xq9U",
+      "version": "1.11.7+26.3-fabric",
+      "version_id": "vTN4NRGW",
+      "name": "iris-fabric-1.11.7+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/vTN4NRGW/iris-fabric-1.11.7%2Bmc26.3.jar",
+      "sha1": "fa03640ba1e4ef2f7ae3619c6373a06e46d0ba2c",
+      "size": 2850938,
+      "requiert": [
+        "AANobbMI"
+      ],
+      "auto": false
+    },
+    {
+      "slug": "modmenu",
+      "titre": "Mod Menu",
+      "projet": "mOgUt4GM",
+      "version": "21.0.0",
+      "version_id": "kyy7dbrZ",
+      "name": "modmenu-21.0.0.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/kyy7dbrZ/modmenu-21.0.0.jar",
+      "sha1": "66ec40f1cd0c037ddca2b5fc6b4b976d479c18e8",
+      "size": 856779,
+      "requiert": [
+        "P7dR8mSH",
+        "eXts2L7r"
+      ],
+      "auto": false
+    },
+    {
+      "slug": "placeholder-api",
+      "titre": "Text Placeholder API",
+      "projet": "eXts2L7r",
+      "version": "3.2.0+26.3",
+      "version_id": "lXytLqWj",
+      "name": "placeholder-api-3.2.0+26.3.jar",
+      "url": "https://cdn.modrinth.com/data/eXts2L7r/versions/lXytLqWj/placeholder-api-3.2.0%2B26.3.jar",
+      "sha1": "4c455faa6333dbaef72cedbb91fe4a2a03176741",
+      "size": 254959,
+      "requiert": [],
+      "auto": true
+    },
+    {
+      "slug": "sodium",
+      "titre": "Sodium",
+      "projet": "AANobbMI",
+      "version": "mc26.3-0.9.2-fabric",
+      "version_id": "bAZQdGpg",
+      "name": "sodium-fabric-0.9.2+mc26.3.jar",
+      "url": "https://cdn.modrinth.com/data/AANobbMI/versions/bAZQdGpg/sodium-fabric-0.9.2%2Bmc26.3.jar",
+      "sha1": "9acfe851e36f4fb27d7c5baa224e8bd4e0334283",
+      "size": 1908068,
+      "requiert": [],
+      "auto": false
+    }
+  ],
+  "shaderpacks": [
+    {
+      "slug": "complementary-reimagined",
+      "titre": "Complementary Shaders - Reimagined",
+      "projet": "HVnmMxH1",
+      "version": "r5.9.3",
+      "version_id": "Bqen1mJX",
+      "name": "ComplementaryReimagined_r5.9.3.zip",
+      "url": "https://cdn.modrinth.com/data/HVnmMxH1/versions/Bqen1mJX/ComplementaryReimagined_r5.9.3.zip",
+      "sha1": "838139b54cddb56b2e83cd260d8efd960ac536d6",
+      "size": 553397,
+      "requiert": [],
+      "auto": false
+    }
+  ],
+  "resourcepacks": []
+}
