@@ -1,0 +1,27 @@
+{%- assign u = page.url -%}
+<header class="entete" data-entete>
+  <div class="entete-in">
+    <a class="logo" href="{{ '/' | relative_url }}" aria-label="LQDM, retour à l'accueil">
+      <img src="{{ '/icone.png' | relative_url }}" alt="" width="38" height="38">
+      <span>LQDM</span>
+    </a>
+    <button class="menu-bouton" type="button" aria-expanded="false" aria-controls="navigation" data-menu>
+      <span class="visuel-cache">Menu</span><span class="barres" aria-hidden="true"></span>
+    </button>
+    <nav class="navigation" id="navigation" aria-label="Navigation principale">
+      <ul class="liens">
+        <li><a href="{{ '/nouvelles/' | relative_url }}"{% if u contains '/nouvelles/' %} aria-current="page"{% endif %}>Nouvelles</a></li>
+        <li><a href="{{ '/wiki/' | relative_url }}"{% if u contains '/wiki/' %} aria-current="page"{% endif %}>Wiki</a></li>
+        <li><a href="{{ '/support/' | relative_url }}"{% if u contains '/support/' %} aria-current="page"{% endif %}>Support</a></li>
+        {%- if site.lqdm.votes.size > 0 %}
+        <li><a href="{{ '/voter/' | relative_url }}"{% if u contains '/voter/' %} aria-current="page"{% endif %}>Voter</a></li>
+        {%- endif %}
+        <li><a href="{{ '/recrutement/' | relative_url }}"{% if u contains '/recrutement/' %} aria-current="page"{% endif %}>Recrutement</a></li>
+      </ul>
+      <div class="actions">
+        <a class="lien-discord" href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">{% include icone.html nom="discord" %}<span>Discord</span></a>
+        <a class="bouton-nav" href="{{ '/jouer/' | relative_url }}"{% if u contains '/jouer/' %} aria-current="page"{% endif %}>Jouer</a>
+      </div>
+    </nav>
+  </div>
+</header>

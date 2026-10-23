@@ -1,0 +1,51 @@
+# Site LQDM : https://qcsmp.mekhorizon.org
+# GitHub Pages le construit tout seul avec Jekyll à chaque push sur main (dossier docs/).
+#
+#   Ajouter une nouvelle : un fichier dans _posts/  (voir docs/README.md)
+#   Ajouter un article du wiki : un fichier dans _wiki/
+
+title: LQDM
+description: >-
+  Le serveur Minecraft des Québécois : survie, mini-jeux et tournages, sur PC, console et téléphone.
+url: https://qcsmp.mekhorizon.org
+lang: fr
+timezone: America/Toronto
+
+markdown: kramdown
+kramdown:
+  input: GFM
+permalink: /nouvelles/:title/
+plugins:
+  - jekyll-sitemap
+
+collections:
+  wiki:
+    output: true
+    permalink: /wiki/:name/
+
+defaults:
+  - scope: { path: "" }
+    values: { layout: defaut }
+  - scope: { path: "", type: posts }
+    values: { layout: article }
+  - scope: { path: "", type: wiki }
+    values: { layout: wiki }
+
+exclude:
+  - README.md
+
+# --- Réglages du serveur ---------------------------------------------------------------
+# Garde-les identiques à catalog.json et à serveur/config.yml.
+lqdm:
+  depot: PoiBoy34/QC-SMP
+  adresse: mc.qcsmp.mekhorizon.org
+  port_bedrock: "19132"
+  gamertag: ""                  # gamertag du compte Xbox du serveur (onglet Amis des consoles)
+  discord: https://discord.gg/EQyXcrG2hA
+  contact: poiboy34             # pseudo Discord à contacter pour l'aide et le recrutement
+  createur_discord: CampFire012
+  createur_discord_lien: https://discord.gg/pcQqDzTq2B
+  recrutement_ouvert: true
+  # Sites de vote : l'onglet « Voter » apparaît dès qu'il y en a un. Exemple :
+  #   - { nom: "serveurs-minecraft.org", lien: "https://..." }
+  votes: []

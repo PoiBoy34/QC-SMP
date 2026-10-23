@@ -1,0 +1,164 @@
+---
+title: Jouer
+description: Télécharge le launcher LQDM et viens jouer, sur PC, console ou téléphone.
+---
+<section class="jouer-haut">
+  <div class="section-in">
+    <p class="surtitre">Jouer à LQDM</p>
+    <h1>Viens jouer avec nous</h1>
+    <p>Sur PC, télécharge le launcher : il installe tout et te connecte directement au serveur.
+      Sur console ou téléphone, rien à installer.</p>
+    <p class="etat" data-etat hidden><span class="point"></span><span data-etat-texte></span></p>
+
+    <div class="telecharger">
+      <a class="bouton bouton-blanc" id="bouton-principal" href="https://github.com/{{ site.lqdm.depot }}/releases/latest">
+        {% include icone.html nom="telecharger" %}<span id="bouton-texte">Télécharger pour Windows</span>
+      </a>
+      <div class="sous-bouton" id="sous-bouton">Gratuit · Windows 10 et 11</div>
+      <div class="autres" id="autres">Sur Linux ? <a id="lien-linux" href="https://github.com/{{ site.lqdm.depot }}/releases/latest">Prends la version AppImage</a></div>
+      <div class="message-appareil" id="message-appareil" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    <div class="onglets" role="tablist" aria-label="Sur quoi joues-tu ?">
+      <button class="onglet" type="button" role="tab" id="onglet-pc" aria-controls="pc" aria-selected="true">💻 Sur PC</button>
+      <button class="onglet" type="button" role="tab" id="onglet-console" aria-controls="console" aria-selected="false">🎮 Sur console</button>
+      <button class="onglet" type="button" role="tab" id="onglet-mobile" aria-controls="mobile" aria-selected="false">📱 Sur téléphone ou tablette</button>
+    </div>
+
+    <!-- PC (Minecraft Java) -->
+    <div class="panneau" id="pc" role="tabpanel" aria-labelledby="onglet-pc">
+      <div class="etapes">
+        <div class="etape">
+          <div class="num">1</div>
+          <h3>Télécharge et installe</h3>
+          <p>Clique sur le gros bouton blanc, puis ouvre le fichier téléchargé et suis l'installation.</p>
+        </div>
+        <div class="etape">
+          <div class="num">2</div>
+          <h3>Connecte-toi</h3>
+          <p>Ouvre <b>LQDM</b> et connecte-toi avec ton compte Microsoft, celui avec lequel tu as acheté Minecraft.</p>
+        </div>
+        <div class="etape">
+          <div class="num">3</div>
+          <h3>Clique sur Jouer</h3>
+          <p>La première fois, le téléchargement prend quelques minutes. Ensuite, le jeu s'ouvre et t'amène
+            directement au spawn.</p>
+        </div>
+      </div>
+      <div class="aide">
+        <h3>Un écran bleu « Windows a protégé votre ordinateur » ?</h3>
+        <p>C'est normal : Windows affiche ça pour tous les petits programmes qu'il ne connaît pas encore.
+          Ce n'est pas un virus.</p>
+        <ol>
+          <li>Clique sur <b>Informations complémentaires</b>.</li>
+          <li>Puis sur <b>Exécuter quand même</b>.</li>
+        </ol>
+        <p>Si Chrome ou Edge bloque le téléchargement : clique sur les trois points à côté du fichier,
+          puis sur <b>Conserver</b>. Tous les détails : <a href="{{ '/wiki/launcher-bloque/' | relative_url }}">Windows bloque le launcher</a>.</p>
+      </div>
+    </div>
+
+    <!-- Consoles -->
+    <div class="panneau" id="console" role="tabpanel" aria-labelledby="onglet-console" hidden>
+      <div class="etapes">
+        <div class="etape">
+          <div class="num">1</div>
+          <h3>Ajoute le serveur en ami</h3>
+          <p>Dans Minecraft : <b>Jouer</b>, onglet <b>Amis</b>, puis <b>Ajouter un ami</b>.</p>
+          {%- if site.lqdm.gamertag != "" %}
+          <p>Cherche ce nom :</p>
+          <div class="copier-ligne"><code>{{ site.lqdm.gamertag }}</code><button class="copier" type="button" data-copier="{{ site.lqdm.gamertag }}">Copier</button></div>
+          {%- else %}
+          <p>Le nom du compte du serveur sera bientôt annoncé ici et sur le Discord.</p>
+          {%- endif %}
+        </div>
+        <div class="etape">
+          <div class="num">2</div>
+          <h3>Attends l'invitation</h3>
+          <p>Le serveur accepte ta demande tout seul. Ça peut prendre une minute.</p>
+        </div>
+        <div class="etape">
+          <div class="num">3</div>
+          <h3>Rejoins la partie</h3>
+          <p>Retourne dans l'onglet <b>Amis</b> : le serveur apparaît dans les parties qu'on peut rejoindre.
+            Sélectionne-le et clique sur <b>Rejoindre</b>.</p>
+        </div>
+      </div>
+      <div class="aide">
+        <h3>Avant de commencer</h3>
+        <p>Minecraft doit être à jour et connecté à ton compte Microsoft. Sur PlayStation et Switch, le jeu en
+          ligne peut demander un abonnement (PS Plus, Nintendo Switch Online).</p>
+        <p>Tu as un compte enfant ? Un parent doit autoriser le <b>jeu multijoueur</b>, le <b>jeu multiplateforme</b>
+          et les <b>amis</b> dans Microsoft Family Safety (ou dans les paramètres de confidentialité Xbox), sinon le
+          serveur n'apparaîtra pas. Plus d'aide : <a href="{{ '/wiki/probleme-console/' | relative_url }}">le serveur n'apparaît pas sur ma console</a>.</p>
+      </div>
+    </div>
+
+    <!-- Téléphone, tablette, Bedrock sur PC -->
+    <div class="panneau" id="mobile" role="tabpanel" aria-labelledby="onglet-mobile" hidden>
+      <div class="etapes">
+        <div class="etape">
+          <div class="num">1</div>
+          <h3>Ouvre les serveurs</h3>
+          <p>Dans Minecraft : <b>Jouer</b>, onglet <b>Serveurs</b>, puis tout en bas <b>Ajouter un serveur</b>.</p>
+        </div>
+        <div class="etape">
+          <div class="num">2</div>
+          <h3>Entre l'adresse</h3>
+          <p>Nom : ce que tu veux. Adresse :</p>
+          <div class="copier-ligne"><code>{{ site.lqdm.adresse }}</code><button class="copier" type="button" data-copier="{{ site.lqdm.adresse }}">Copier</button></div>
+          <p>Port :</p>
+          <div class="copier-ligne"><code>{{ site.lqdm.port_bedrock }}</code><button class="copier" type="button" data-copier="{{ site.lqdm.port_bedrock }}">Copier</button></div>
+        </div>
+        <div class="etape">
+          <div class="num">3</div>
+          <h3>Rejoins</h3>
+          <p>Enregistre, puis touche le serveur pour le rejoindre. Accepte le pack de textures si le jeu te le propose.</p>
+        </div>
+      </div>
+      <div class="aide">
+        <h3>Ça marche aussi avec Minecraft Bedrock sur PC</h3>
+        <p>La version « Minecraft pour Windows » (Bedrock) se connecte de la même façon, avec l'adresse et le port
+          ci-dessus.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in faq">
+    <h2>Questions</h2>
+    <details>
+      <summary>Le serveur me dit que je ne suis pas sur la liste blanche</summary>
+      <p>Le serveur est privé. Demande à être ajouté dans le salon #support du
+        <a href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">Discord</a> ou à {{ site.lqdm.contact }},
+        en donnant ton pseudo (ton gamertag si tu joues sur console, téléphone ou tablette).</p>
+    </details>
+    <details>
+      <summary>Est-ce que le launcher est gratuit ? Est-ce un virus ?</summary>
+      <p>Il est gratuit et ce n'est pas un virus : son code est public sur
+        <a href="https://github.com/{{ site.lqdm.depot }}" target="_blank" rel="noopener">GitHub</a>, et le fichier est
+        fabriqué automatiquement à partir de ce code. Il te faut quand même ton propre compte Minecraft.</p>
+    </details>
+    <details>
+      <summary>Est-ce que je peux jouer sans le launcher ?</summary>
+      <p>Oui : dans Minecraft Java, va dans Multijoueur et ajoute l'adresse <code>{{ site.lqdm.adresse }}</code>.
+        Le launcher installe en plus les mods qui rendent le jeu plus fluide et te connecte directement.</p>
+    </details>
+    <details>
+      <summary>J'ai un Mac</summary>
+      <p>Le launcher n'existe pas encore sur Mac. Tu peux jouer avec Minecraft Java en ajoutant l'adresse du
+        serveur dans Multijoueur.</p>
+    </details>
+    <details>
+      <summary>Ça ne marche pas, qu'est-ce que je fais ?</summary>
+      <p>Dans le launcher : ⚙️ Paramètres, puis Aide et diagnostic, puis <b>Copier le rapport de diagnostic</b>.
+        Colle-le dans le salon #support du Discord ou envoie-le à {{ site.lqdm.contact }}, avec une capture d'écran
+        du message d'erreur. Voir aussi la page <a href="{{ '/support/' | relative_url }}">Support</a>.</p>
+    </details>
+  </div>
+</section>

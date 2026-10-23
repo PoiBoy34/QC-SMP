@@ -1,0 +1,86 @@
+---
+title: Support
+description: Besoin d'aide sur LQDM ? Le wiki, le salon #support du Discord ou poiboy34.
+---
+<section class="titre-page">
+  <div class="section-in">
+    <div>
+      <h1>Besoin d'aide ?</h1>
+      <p>Un problème pour te connecter, un bug, un joueur qui dérange : on est là.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    <div class="grille-cartes">
+      <article class="carte">
+        <span class="carte-icone">{% include icone.html nom="chercher" %}</span>
+        <h3>Cherche dans le wiki</h3>
+        <p>La réponse est peut-être déjà là : rejoindre le serveur, les commandes, les problèmes courants.</p>
+        <form class="recherche" action="{{ '/wiki/' | relative_url }}" role="search"
+              data-recherche="{{ '/wiki/recherche.json' | relative_url }}" data-support="{{ '/support/' | relative_url }}">
+          {% include icone.html nom="chercher" %}
+          <label class="visuel-cache" for="q">Rechercher dans le wiki</label>
+          <input id="q" name="q" type="search" placeholder="Ex. : console, liste blanche…" autocomplete="off">
+          <ul class="resultats" hidden></ul>
+        </form>
+      </article>
+      <article class="carte">
+        <span class="carte-icone discord">{% include icone.html nom="discord" %}</span>
+        <h3>Le salon #support</h3>
+        <p>Écris ton problème dans le salon <b>#support</b> du Discord. Quelqu'un de l'équipe te répondra.</p>
+        <a class="bouton bouton-discord petit" href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">{% include icone.html nom="discord" %}Ouvrir le Discord</a>
+      </article>
+      <article class="carte">
+        <span class="carte-icone discord">{% include icone.html nom="discord" %}</span>
+        <h3>Écris à {{ site.lqdm.contact }}</h3>
+        <p>Tu peux aussi envoyer un message privé à <b>{{ site.lqdm.contact }}</b> sur Discord.</p>
+        <div class="copier-ligne"><code>{{ site.lqdm.contact }}</code><button class="copier" type="button" data-copier="{{ site.lqdm.contact }}">Copier le pseudo</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="section-in deux-colonnes">
+    <div>
+      <h2>Pour qu'on t'aide plus vite</h2>
+      <p class="intro">Dans ton message, donne-nous :</p>
+      <ul class="liste-coches" style="margin-top: 20px">
+        <li><b>Sur quoi tu joues</b> : PC, Xbox, PlayStation, Switch, téléphone…</li>
+        <li><b>Ton pseudo</b> Minecraft, ou ton gamertag si tu joues sur console ou téléphone.</li>
+        <li><b>Ce qui se passe</b>, avec une capture d'écran du message d'erreur.</li>
+        <li><b>Le rapport du launcher</b> si tu joues sur PC (voir à côté).</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Le rapport du launcher</h2>
+      <p class="intro">Il contient tout ce qu'il faut pour comprendre un problème sur PC.</p>
+      <div class="prose">
+        <ol>
+          <li>Dans le launcher, ouvre <strong>⚙️ Paramètres</strong>.</li>
+          <li>Descends jusqu'à <strong>Aide et diagnostic</strong>.</li>
+          <li>Clique sur <strong>Copier le rapport de diagnostic</strong>.</li>
+          <li>Colle-le dans ton message avec <kbd>Ctrl</kbd> + <kbd>V</kbd>.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-in deux-colonnes">
+    <div>
+      <h2>Signaler un joueur</h2>
+      <p class="intro">Quelqu'un ne respecte pas les <a href="{{ '/wiki/regles/' | relative_url }}">règles</a> ?
+        Ne réponds pas aux provocations : prends une capture d'écran, puis préviens-nous dans #support ou
+        écris à {{ site.lqdm.contact }}.</p>
+    </div>
+    <div>
+      <h2>Le Discord</h2>
+      <p class="intro">Le Discord de LQDM a été créé par <b>{{ site.lqdm.createur_discord }}</b>.
+        Tu peux aussi passer sur <a href="{{ site.lqdm.createur_discord_lien }}" target="_blank" rel="noopener">son Discord</a>.</p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,37 @@
+---
+layout: defaut
+---
+{%- assign categorie = site.data.wiki | where: "nom", page.categorie | first %}
+{%- assign memes = site.wiki | where: "categorie", page.categorie | sort: "ordre" %}
+<div class="bandeau-wiki bandeau-wiki-mini">
+  <div class="section-in">
+    <form class="recherche" action="{{ '/wiki/' | relative_url }}" role="search"
+          data-recherche="{{ '/wiki/recherche.json' | relative_url }}" data-support="{{ '/support/' | relative_url }}">
+      {% include icone.html nom="chercher" %}
+      <label class="visuel-cache" for="q">Rechercher dans le wiki</label>
+      <input id="q" name="q" type="search" placeholder="Rechercher dans le wiki…" autocomplete="off">
+      <ul class="resultats" hidden></ul>
+    </form>
+  </div>
+</div>
+
+<div class="wiki-page section-in">
+  <aside class="wiki-cote">
+    <p class="fil"><a href="{{ '/wiki/' | relative_url }}">Wiki</a> {% include icone.html nom="droite" %} {{ page.categorie }}</p>
+    <h2 style="--couleur: {{ categorie.couleur | default: '#2f7bff' }}">{{ page.categorie }}</h2>
+    <ul>
+      {%- for a in memes %}
+      <li><a href="{{ a.url | relative_url }}"{% if a.url == page.url %} aria-current="page"{% endif %}>{{ a.title }}</a></li>
+      {%- endfor %}
+    </ul>
+    <a class="carte-aide" href="{{ '/support/' | relative_url }}">
+      <strong>Pas trouvé ta réponse ?</strong>
+      <span>Écris dans #support sur Discord ou à {{ site.lqdm.contact }}.</span>
+    </a>
+  </aside>
+  <article class="prose wiki-article">
+    <span class="pastille" style="--couleur: {{ categorie.couleur | default: '#2f7bff' }}">{{ page.categorie }}</span>
+    <h1>{{ page.title }}</h1>
+    {{ content }}
+  </article>
+</div>

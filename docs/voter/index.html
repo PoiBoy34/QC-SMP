@@ -1,0 +1,34 @@
+---
+title: Voter
+description: Vote pour LQDM sur les sites de serveurs Minecraft.
+---
+{%- comment -%}
+L'onglet « Voter » n'apparaît dans le menu que si des sites sont listés dans _config.yml (lqdm.votes).
+{%- endcomment %}
+<section class="titre-page">
+  <div class="section-in">
+    <div>
+      <h1>Voter</h1>
+      <p>Chaque vote aide d'autres Québécois à découvrir LQDM.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    {%- if site.lqdm.votes.size > 0 %}
+    <div class="grille-cartes">
+      {%- for v in site.lqdm.votes %}
+      <article class="carte">
+        <span class="carte-icone">🗳️</span>
+        <h3>{{ v.nom }}</h3>
+        <p>Un vote par jour.</p>
+        <a class="bouton bouton-principal petit" href="{{ v.lien }}" target="_blank" rel="noopener">Voter {% include icone.html nom="fleche" %}</a>
+      </article>
+      {%- endfor %}
+    </div>
+    {%- else %}
+    <p class="vide">Il n'y a pas encore de site de vote pour LQDM.</p>
+    {%- endif %}
+  </div>
+</section>

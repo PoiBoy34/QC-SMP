@@ -1,0 +1,50 @@
+---
+title: Wiki
+description: Le centre d'aide de LQDM : rejoindre le serveur, les commandes, les règles et le dépannage.
+---
+<section class="bandeau-wiki">
+  <div class="section-in">
+    <h1>Comment peut-on t'aider ?</h1>
+    <p>Rejoindre le serveur, les commandes, les règles, les petits problèmes : tout est ici.</p>
+    <form class="recherche" action="{{ '/wiki/' | relative_url }}" role="search"
+          data-recherche="{{ '/wiki/recherche.json' | relative_url }}" data-support="{{ '/support/' | relative_url }}">
+      {% include icone.html nom="chercher" %}
+      <label class="visuel-cache" for="q">Rechercher dans le wiki</label>
+      <input id="q" name="q" type="search" placeholder="Rechercher dans le wiki…" autocomplete="off">
+      <ul class="resultats" hidden></ul>
+    </form>
+  </div>
+</section>
+
+<div class="section-in">
+  <section class="wiki-bloc">
+    <h2>{% include icone.html nom="etoile" %}Articles les plus lus</h2>
+    <ul class="populaires">
+      {%- assign populaires = site.wiki | where_exp: "a", "a.populaire" | sort: "populaire" %}
+      {%- for a in populaires %}
+      <li><a href="{{ a.url | relative_url }}"><span><span class="cat">{{ a.categorie }} |</span> {{ a.title }}</span>{% include icone.html nom="droite" %}</a></li>
+      {%- endfor %}
+    </ul>
+  </section>
+
+  <section class="wiki-bloc section-serree">
+    <h2>Toutes les catégories</h2>
+    <div class="grille-categories">
+      {%- for c in site.data.wiki %}
+      {%- assign articles = site.wiki | where: "categorie", c.nom | sort: "ordre" %}
+      <article class="categorie">
+        <img src="{{ c.icone | relative_url }}" alt="" width="96" height="96" loading="lazy">
+        <div>
+          <span class="pastille" style="--couleur: {{ c.couleur }}">{{ c.nom }}</span>
+          <p>{{ c.description }}</p>
+          <ul>
+            {%- for a in articles %}
+            <li><a href="{{ a.url | relative_url }}">{% include icone.html nom="droite" %}{{ a.title }}</a></li>
+            {%- endfor %}
+          </ul>
+        </div>
+      </article>
+      {%- endfor %}
+    </div>
+  </section>
+</div>

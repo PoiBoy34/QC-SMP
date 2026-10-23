@@ -1,0 +1,19 @@
+{%- assign a = include.article -%}
+{%- assign image = a.image | default: '/apercu.png' -%}
+<a class="carte-article" href="{{ a.url | relative_url }}" data-categorie="{{ a.categorie }}">
+  <span class="carte-image">
+    {%- if image contains '.jpg' %}
+    <picture>
+      <source srcset="{{ image | replace: '.jpg', '.webp' | relative_url }}" type="image/webp">
+      <img src="{{ image | relative_url }}" alt="" loading="lazy" width="1200" height="630">
+    </picture>
+    {%- else %}
+    <img src="{{ image | relative_url }}" alt="" loading="lazy" width="1200" height="630">
+    {%- endif %}
+  </span>
+  <span class="carte-corps">
+    <span class="carte-meta">{% if a.categorie %}<span class="pastille">{{ a.categorie }}</span>{% endif %}{% include date-fr.html date=a.date %}</span>
+    <span class="carte-titre">{{ a.title }}</span>
+    <span class="carte-lire">Lire l'article {% include icone.html nom="fleche" %}</span>
+  </span>
+</a>

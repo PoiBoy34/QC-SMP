@@ -1,0 +1,31 @@
+---
+title: Nouvelles
+description: Toute l'actualité du serveur LQDM.
+---
+<section class="titre-page">
+  <div class="section-in">
+    <div>
+      <h1>Nos nouvelles</h1>
+      <p>Découvre toute l'actualité de LQDM.</p>
+    </div>
+    <label class="filtre">Filtrer par
+      <select data-filtre>
+        <option value="">Tout</option>
+        {%- for c in site.data.nouvelles %}
+        <option>{{ c }}</option>
+        {%- endfor %}
+      </select>
+    </label>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    <div class="grille-articles">
+      {%- for a in site.posts %}
+      {% include carte-article.html article=a %}
+      {%- endfor %}
+    </div>
+    <p class="vide" data-vide{% if site.posts.size > 0 %} hidden{% endif %}>Aucune nouvelle dans cette catégorie pour le moment.</p>
+  </div>
+</section>

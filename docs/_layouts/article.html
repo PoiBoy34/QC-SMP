@@ -1,0 +1,38 @@
+---
+layout: defaut
+---
+<article class="article">
+  <header class="article-entete">
+    <a class="retour" href="{{ '/nouvelles/' | relative_url }}">{% include icone.html nom="gauche" %}Toutes les nouvelles</a>
+    <p class="article-meta">{% if page.categorie %}<span class="pastille">{{ page.categorie }}</span>{% endif %}{% include date-fr.html date=page.date %}</p>
+    <h1>{{ page.title }}</h1>
+  </header>
+  {%- if page.image %}
+  <picture class="article-image">
+    {%- if page.image contains '.jpg' %}
+    <source srcset="{{ page.image | replace: '.jpg', '.webp' | relative_url }}" type="image/webp">
+    {%- endif %}
+    <img src="{{ page.image | relative_url }}" alt="" width="1200" height="630">
+  </picture>
+  {%- endif %}
+  <div class="prose">
+    {{ content }}
+  </div>
+</article>
+
+{%- assign autres = site.posts | where_exp: "p", "p.url != page.url" %}
+{%- if autres.size > 0 %}
+<section class="section section-serree">
+  <div class="section-in">
+    <div class="titre-ligne">
+      <h2>À lire aussi</h2>
+      <a class="lien-fleche" href="{{ '/nouvelles/' | relative_url }}">Toutes les nouvelles {% include icone.html nom="droite" %}</a>
+    </div>
+    <div class="grille-articles">
+      {%- for a in autres limit: 3 %}
+      {% include carte-article.html article=a %}
+      {%- endfor %}
+    </div>
+  </div>
+</section>
+{%- endif %}

@@ -1,0 +1,67 @@
+---
+title: Recrutement
+description: Tu veux aider LQDM ? Modération, construction, animation.
+---
+<section class="titre-page">
+  <div class="section-in">
+    <div>
+      <h1>Rejoins l'équipe</h1>
+      <p>LQDM, c'est un projet entre amis. Tu veux donner un coup de main ?</p>
+    </div>
+    {%- if site.lqdm.recrutement_ouvert %}
+    <span class="statut">Recrutement ouvert</span>
+    {%- else %}
+    <span class="statut ferme">Recrutement fermé pour le moment</span>
+    {%- endif %}
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    <div class="grille-cartes">
+      <article class="carte">
+        <span class="carte-icone">🛡️</span>
+        <h3>Modération</h3>
+        <p>Aider les joueurs qui débutent, répondre dans #support et faire respecter les règles, dans le jeu
+          comme sur Discord.</p>
+      </article>
+      <article class="carte">
+        <span class="carte-icone">🧱</span>
+        <h3>Construction</h3>
+        <p>Construire le spawn, les décors des tournages et les cartes des mini-jeux, en équipe.</p>
+      </article>
+      <article class="carte">
+        <span class="carte-icone">🎉</span>
+        <h3>Animation</h3>
+        <p>Imaginer et organiser des événements : concours de construction, chasses au trésor, soirées mini-jeux.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="section-in deux-colonnes">
+    <div>
+      <h2>Ce qu'on cherche</h2>
+      <ul class="liste-coches" style="margin-top: 22px">
+        <li><b>Être actif</b> sur le serveur et sur le Discord.</li>
+        <li><b>Être respectueux</b> avec tout le monde, même quand ça chauffe.</li>
+        <li><b>Avoir envie d'aider</b> : pas besoin d'être un expert, on apprend ensemble.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Comment postuler</h2>
+      <p class="intro">Écris à <b>{{ site.lqdm.contact }}</b> sur Discord avec :</p>
+      <ul class="liste-coches" style="margin-top: 22px">
+        <li>ton pseudo Minecraft (ou ton gamertag) ;</li>
+        <li>le rôle qui t'intéresse ;</li>
+        <li>pourquoi tu veux aider LQDM ;</li>
+        <li>pour la construction : quelques captures de tes créations.</li>
+      </ul>
+      <div class="copier-ligne" style="margin-top: 22px">
+        <code>{{ site.lqdm.contact }}</code><button class="copier" type="button" data-copier="{{ site.lqdm.contact }}">Copier le pseudo</button>
+        <a class="bouton bouton-discord petit" href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">{% include icone.html nom="discord" %}Discord</a>
+      </div>
+    </div>
+  </div>
+</section>

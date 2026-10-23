@@ -1,0 +1,5 @@
+{%- comment -%} Date en français, ex. « 23 octobre 2026 ». Paramètre : date. {%- endcomment -%}
+{%- assign mois = "janvier,février,mars,avril,mai,juin,juillet,août,septembre,octobre,novembre,décembre" | split: "," -%}
+{%- assign m = include.date | date: "%-m" | minus: 1 -%}
+{%- assign jour = include.date | date: "%-d" -%}
+{{- jour }}{% if jour == "1" %}er{% endif %} {{ mois[m] }} {{ include.date | date: "%Y" -}}

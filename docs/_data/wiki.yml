@@ -1,0 +1,21 @@
+# Catégories du wiki, dans l'ordre d'affichage. Chaque article de _wiki/ indique la sienne
+# avec « categorie: » (le nom exact d'ici).
+- nom: Pour commencer
+  couleur: "#2f7bff"
+  icone: /assets/img/wiki/commencer.png
+  description: Rejoindre le serveur sur PC, console ou téléphone.
+
+- nom: Le serveur
+  couleur: "#16a34a"
+  icone: /assets/img/wiki/serveur.png
+  description: Le menu LQDM, les commandes, les homes et les items.
+
+- nom: Règlement
+  couleur: "#9333ea"
+  icone: /assets/img/wiki/regles.png
+  description: Les règles du serveur et du Discord.
+
+- nom: Dépannage
+  couleur: "#ea580c"
+  icone: /assets/img/wiki/depannage.png
+  description: Quand le launcher ou la connexion fait des siennes.

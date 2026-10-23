@@ -108,7 +108,7 @@ Le Discord du serveur a été créé par **CampFire012**
 | `update_manifest.sh` | Régénère les manifests |
 | `publish.sh` | Listes + contenu + manifests + commit + push, en une commande |
 | `minecraft-launcher/` | Code du launcher (Electron), basé sur TimeRift-Launcher 2.1.3 |
-| `docs/` | Site de téléchargement (https://qcsmp.mekhorizon.org), publié par GitHub Pages |
+| `docs/` | Le site (https://qcsmp.mekhorizon.org) : accueil, nouvelles, wiki, support, téléchargement. Publié par GitHub Pages : voir [docs/README.md](docs/README.md) |
 | `serveur/` | Déploiement du serveur sur Proxmox (Ansible, Docker, Velocity + Geyser) : voir le [mini guide de déploiement](serveur/DEPLOIEMENT.md) |
 
 ## Ajouter un mod
@@ -187,6 +187,7 @@ jamais avant la fin du build Windows : le `.exe` n'aurait plus nulle part où at
 
 ## Visuels
 
-L'icône (`minecraft-launcher/build/icon.png`, 512×512) et le fond
-(`minecraft-launcher/src/bg.png`, `assets/`) sont provisoires : remplace-les
-par les vrais, même nom de fichier.
+L'icône (`minecraft-launcher/build/icon.png`, 512×512, aussi dans `docs/icone.png` et
+`assets/pack-icons/`) reprend les fleurs de lys du fleurdelisé officiel. Le fond
+(`minecraft-launcher/src/bg.png`, `assets/`) est provisoire : remplace-le par une vraie
+capture du serveur, même nom de fichier.

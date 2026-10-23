@@ -1,0 +1,36 @@
+<footer class="pied">
+  <div class="pied-in">
+    <div class="pied-marque">
+      <a class="logo" href="{{ '/' | relative_url }}">
+        <img src="{{ '/icone.png' | relative_url }}" alt="" width="34" height="34" loading="lazy">
+        <span>LQDM</span>
+      </a>
+      <p>Le serveur Minecraft des Québécois. PC, consoles et téléphones, tout le monde ensemble.</p>
+      <a class="bouton bouton-discord petit" href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">{% include icone.html nom="discord" %}Rejoindre le Discord</a>
+    </div>
+    <nav class="pied-liens" aria-label="Plan du site">
+      <div>
+        <h2>Le serveur</h2>
+        <a href="{{ '/jouer/' | relative_url }}">Jouer</a>
+        <a href="{{ '/nouvelles/' | relative_url }}">Nouvelles</a>
+        <a href="{{ '/wiki/regles/' | relative_url }}">Règles</a>
+      </div>
+      <div>
+        <h2>Aide</h2>
+        <a href="{{ '/wiki/' | relative_url }}">Wiki</a>
+        <a href="{{ '/support/' | relative_url }}">Support</a>
+        <a href="{{ '/recrutement/' | relative_url }}">Recrutement</a>
+      </div>
+      <div>
+        <h2>Communauté</h2>
+        <a href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">Discord</a>
+        <a href="https://github.com/{{ site.lqdm.depot }}" target="_blank" rel="noopener">Code source</a>
+        <a href="https://github.com/{{ site.lqdm.depot }}/releases" target="_blank" rel="noopener">Versions du launcher</a>
+      </div>
+    </nav>
+  </div>
+  <div class="pied-bas">
+    <p>Discord créé par <a href="{{ site.lqdm.createur_discord_lien }}" target="_blank" rel="noopener">{{ site.lqdm.createur_discord }}</a></p>
+    <p>Serveur non officiel, sans lien avec Mojang Studios ni Microsoft.</p>
+  </div>
+</footer>
