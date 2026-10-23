@@ -8,6 +8,7 @@ title: LQDM
 description: >-
   Le serveur Minecraft des Québécois : survie, mini-jeux et tournages, sur PC, console et téléphone.
 url: https://qcsmp.mekhorizon.org
+baseurl: ""               # le site est à la racine du domaine (sinon GitHub devine /QC-SMP)
 lang: fr
 timezone: America/Toronto
 
