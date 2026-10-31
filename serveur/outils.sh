@@ -74,15 +74,28 @@ print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "
     # Même source que l'état affiché sur le site : mcsrvstat.us teste depuis Internet.
     domaine="$(valeur domaine)"; domaine="${domaine:-$VM_IP}"
     ip_maison=$(vm "curl -4 -fsS --max-time 10 https://api.ipify.org" || true)
-    ip_dns=$(python3 -c 'import socket, sys; print(socket.gethostbyname(sys.argv[1]))' "$domaine" 2>/dev/null || true)
     echo "IP publique de la maison : ${ip_maison:-?}"
-    echo "DNS de $domaine : ${ip_dns:-introuvable}"
-    if [[ -n $ip_maison && $ip_dns != "$ip_maison" ]]; then
-      avert "le DNS ne pointe pas sur la maison : vérifie l'enregistrement A dans Cloudflare (ou ./outils.sh logs ddns)"
-    fi
-    for edition in java bedrock; do
-      chemin=$([[ $edition == java ]] && echo "3" || echo "bedrock/3")
-      curl -fsS --max-time 20 -A "lqdm-outils" "https://api.mcsrvstat.us/$chemin/$domaine" | python3 -c '
+    info "1. Le nom $domaine, vu par ce PC et par les DNS publics (Google, Cloudflare)"
+    ip_dns=$(python3 -c 'import socket, sys; print(socket.gethostbyname(sys.argv[1]))' "$domaine" 2>/dev/null || true)
+    echo "ce PC      : ${ip_dns:-introuvable}"
+    for resolveur in "Google|https://dns.google/resolve" "Cloudflare|https://cloudflare-dns.com/dns-query"; do
+      curl -fsS --max-time 10 -H 'accept: application/dns-json' "${resolveur#*|}?name=$domaine&type=A" | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+etats = {0: "OK", 2: "ÉCHEC (SERVFAIL, souvent un problème DNSSEC)", 3: "NOM INCONNU (NXDOMAIN)"}
+ips = [a["data"] for a in d.get("Answer", []) if a.get("type") == 1]
+ligne = sys.argv[1].ljust(10) + " : " + etats.get(d.get("Status"), str(d.get("Status")))
+if ips:
+    ligne += " -> " + ", ".join(ips)
+if d.get("Comment"):
+    ligne += " (" + str(d["Comment"]) + ")"
+print(ligne)' "${resolveur%%|*}" || echo "${resolveur%%|*} : pas de réponse"
+    done
+    teste() {  # $1 = libellé, $2 = adresse
+      for edition in java bedrock; do
+        chemin=$([[ $edition == java ]] && echo "3" || echo "bedrock/3")
+        curl -fsS --max-time 20 -A "LQDM-outils/1.0 (github.com/PoiBoy34/QC-SMP)" \
+          "https://api.mcsrvstat.us/$chemin/$2" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 debug = d.get("debug", {})
@@ -92,10 +105,17 @@ if debug.get("cachehit"):
     ligne += " [résultat en cache]"
 if debug.get("error"):
     ligne += " : " + json.dumps(debug["error"], ensure_ascii=False)
-print(ligne)' "$edition" \
-        || echo "$edition : mcsrvstat.us ne répond pas"
-    done
-    echo "Hors ligne alors que ./outils.sh etat est bon ? Ce sont les redirections de ports du modem."
+print(ligne)' "$edition" || echo "$edition : mcsrvstat.us ne répond pas"
+      done
+    }
+    info "2. Par le nom $domaine (comme le site)"
+    teste nom "$domaine"
+    if [[ -n $ip_maison ]]; then
+      info "3. Directement par l'IP $ip_maison (teste les redirections de ports, sans le DNS)"
+      teste ip "$ip_maison"
+    fi
+    echo "Par l'IP en ligne mais par le nom hors ligne : c'est le DNS (voir l'étape 1)."
+    echo "Hors ligne même par l'IP : ce sont les redirections de ports du modem."
     echo "Un résultat « en cache » peut dater de quelques minutes : relance dans 5 min." ;;
   nethernet)
     # Démarrage de la signalisation (http ou https) puis adresses annoncées aux joueurs

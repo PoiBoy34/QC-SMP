@@ -109,13 +109,26 @@
     group: "{{ uid_mc }}"
     mode: "0640"
 
-- name: Velocity — velocity.toml
+# Velocity réécrit velocity.toml à chaque démarrage (version, options ajoutées) : on compare
+# donc avec la dernière version générée, sinon chaque déploiement redémarrerait le proxy.
+- name: Velocity — velocity.toml (version générée)
   ansible.builtin.template:
     src: velocity.toml.j2
-    dest: "{{ base }}/proxy/velocity.toml"
+    dest: "{{ base }}/proxy/.velocity.toml.genere"
     owner: "{{ uid_mc }}"
     group: "{{ uid_mc }}"
     mode: "0640"
+  register: velocity_genere
+
+- name: Velocity — appliquer velocity.toml quand la config a changé
+  ansible.builtin.copy:
+    src: "{{ base }}/proxy/.velocity.toml.genere"
+    dest: "{{ base }}/proxy/velocity.toml"
+    remote_src: true
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0640"
+  when: velocity_genere.changed
   notify: redemarrer proxy
 
 - name: Velocity — secret de transfert vers les serveurs Paper
