@@ -68,7 +68,8 @@ print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "
     for s in $(paper); do cmd "$s" "$commande" | grep -i "gave\|donné" && exit 0; done
     erreur "$joueur n'est connecté sur aucun serveur Paper" ;;
   nethernet)
-    cmd proxy "geyser nethernet status"
+    # Démarrage de la signalisation (http ou https) puis adresses annoncées aux joueurs
+    vm "docker logs mc-proxy 2>&1 | grep -a 'Built-in signaling' | tail -n 1"
     cmd proxy "geyser nethernet advertised" ;;
   xbox)
     code=$(vm "docker logs mc-proxy 2>&1 | grep -o 'enter the code [A-Z0-9]*' | tail -n 1 | awk '{print \$4}'")

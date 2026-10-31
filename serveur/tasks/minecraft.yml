@@ -478,8 +478,13 @@
     port: "{{ port_bedrock }}"
     timeout: 300
 
+# « advertised » dit si la signalisation tourne et quelles adresses elle annonce (sans les couleurs).
 - name: État NetherNet vu par Geyser
-  ansible.builtin.command: docker exec mc-proxy rcon-cli "geyser nethernet status"
+  ansible.builtin.shell: >-
+    set -o pipefail;
+    docker exec mc-proxy rcon-cli "geyser nethernet advertised" | sed 's/\x1b\[[0-9;]*m//g'
+  args:
+    executable: /bin/bash
   register: nethernet
   changed_when: false
   failed_when: false
