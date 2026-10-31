@@ -364,6 +364,39 @@ ipcMain.handle('get-catalog', async () => {
 
 ipcMain.handle('get-launcher-version', () => app.getVersion());
 
+// --- Minecraft Bedrock (Windows) ---------------------------------------------
+// Bedrock n'a pas besoin du launcher pour se lancer : on ouvre le jeu installé par le
+// Microsoft Store / l'app Xbox, et il rejoint directement le serveur (adresse et port Bedrock).
+const RE_HOTE = /^[A-Za-z0-9.-]{1,253}$/;
+ipcMain.handle('bedrock-info', () => {
+    const windows = process.platform === 'win32';
+    let installe = false;
+    try { installe = windows && Boolean(app.getApplicationNameForProtocol('minecraft://')); } catch (_) { /* inconnu */ }
+    return { disponible: windows, installe };
+});
+ipcMain.handle('play-bedrock', async (event, cible) => {
+    const hote = String((cible && cible.hote) || '');
+    const port = Number((cible && cible.port) || 19132);
+    if (!RE_HOTE.test(hote) || !Number.isInteger(port) || port < 1 || port > 65535) {
+        return { ok: false, erreur: 'adresse du serveur invalide' };
+    }
+    let installe = false;
+    try { installe = Boolean(app.getApplicationNameForProtocol('minecraft://')); } catch (_) { /* inconnu */ }
+    if (!installe) {
+        // Page de Minecraft (Bedrock pour Windows) dans le Microsoft Store
+        await shell.openExternal('ms-windows-store://pdp/?ProductId=9NBLGGH2JHXJ').catch(() => {});
+        return { ok: false, manquant: true };
+    }
+    log.info('[Bedrock] ouverture de ' + hote + ':' + port);
+    try {
+        await shell.openExternal('minecraft://connect/?serverUrl=' + encodeURIComponent(hote) + '&serverPort=' + port);
+        return { ok: true };
+    } catch (e) {
+        log.error('[Bedrock] ' + e.message);
+        return { ok: false, erreur: e.message };
+    }
+});
+
 // Le renderer en a besoin pour borner le curseur de RAM sur la machine réelle.
 ipcMain.handle('get-system-info', () => {
     const limits = ramLimits();

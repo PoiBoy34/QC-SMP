@@ -16,6 +16,7 @@
       "resourcepacks_manifest_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/resourcepacks_manifest.json",
       "servers_dat_url": "https://raw.githubusercontent.com/PoiBoy34/QC-SMP/main/modpacks/LQDM/servers.dat",
       "server_host": "mc.qcsmp.mekhorizon.org:25565",
+      "bedrock_port": 19132,
       "discord": "https://discord.gg/EQyXcrG2hA"
     }
   ]

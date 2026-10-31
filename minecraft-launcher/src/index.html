@@ -290,6 +290,17 @@
     background: linear-gradient(100deg, rgba(61,134,255,.22), rgba(255,255,255,.12)) !important;
     color: var(--cyan) !important; animation: breathe 1.6s ease-in-out infinite;
   }
+  #bedrock-btn {
+    padding: 15px 18px; border-radius: 11px; cursor: pointer; white-space: nowrap;
+    background: rgba(255,255,255,.06); border: 1px solid var(--panel-brd); color: var(--paper);
+    font-family: var(--display); font-variation-settings: 'wdth' 110, 'wght' 700;
+    font-size: 14px; letter-spacing: .06em; text-transform: uppercase;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.1;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  #bedrock-btn small { font-family: var(--body); font-size: 10.5px; letter-spacing: 0; text-transform: none; color: var(--muted); font-variation-settings: normal; }
+  #bedrock-btn:hover { background: rgba(61,134,255,.16); border-color: var(--cyan); transform: translateY(-1px); }
+  #bedrock-btn[hidden] { display: none; }
   #play-btn.ingame {
     background: rgba(255,255,255,.10) !important; color: var(--magenta) !important;
     animation: none;
@@ -489,6 +500,9 @@
       <div id="progress-track"><div id="progress-fill"></div></div>
       <div id="launch-row">
         <button id="play-btn" disabled data-i18n="playChecking">Vérification...</button>
+        <button id="bedrock-btn" hidden title="Ouvre Minecraft Bedrock (Microsoft Store / app Xbox) et rejoint le serveur. Pas besoin de te connecter dans le launcher ni de mods.">
+          <span>Bedrock</span><small id="bedrock-sous">Jouer sur Windows</small>
+        </button>
         <span id="version-tag"></span>
       </div>
       <div id="log-line"></div>
@@ -582,6 +596,10 @@
       playChecking: 'Vérification...',
       playLogin: 'Connecte-toi pour jouer',
       playPlay: 'Jouer',
+      bedrockOpening: 'Ouverture de Minecraft Bedrock : il rejoint le serveur tout seul.',
+      bedrockMissing: "Minecraft Bedrock n'est pas installé : le Microsoft Store s'ouvre sur sa page. Une fois installé, reclique sur Bedrock.",
+      bedrockError: "Impossible d'ouvrir Minecraft Bedrock : ",
+      bedrockNotInstalled: 'Pas installé : ouvre le Store',
       playSyncing: 'Préparation...',
       playLaunching: 'Démarrage de Minecraft...',
       playInGame: 'En jeu',
@@ -1029,6 +1047,29 @@
     renderLoginBtn();
     window.api.loginMicrosoft();
   });
+
+  // Bedrock (Windows) : un bouton à côté de Jouer, si le système le permet.
+  const bedrockCible = () => {
+    const pack = selectedPack || {};
+    const hote = String(pack.server_host || '').split(':')[0];
+    return { hote, port: Number(pack.bedrock_port || 19132) };
+  };
+  async function initBedrock() {
+    try {
+      const info = await window.api.bedrockInfo();
+      $('bedrock-btn').hidden = !info.disponible;
+      if (!info.installe) $('bedrock-sous').textContent = L().bedrockNotInstalled;
+    } catch (_) { /* bouton caché */ }
+  }
+  $('bedrock-btn').addEventListener('click', async () => {
+    const cible = bedrockCible();
+    if (!cible.hote) return;
+    const r = await window.api.playBedrock(cible);
+    if (r.ok) logLine(L().bedrockOpening);
+    else if (r.manquant) logLine(L().bedrockMissing);
+    else logLine(L().bedrockError + (r.erreur || ''));
+  });
+  initBedrock();
 
   $('play-btn').addEventListener('click', () => {
     if (!selectedPack || playState !== 'idle' || !isLoggedIn) return;

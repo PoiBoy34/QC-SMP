@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('api', {
     autoLogin:         () => ipcRenderer.send('auto-login'),
     logout:            () => ipcRenderer.invoke('logout'),
     launchGame:        (packData) => ipcRenderer.send('launch-game', packData),
+    bedrockInfo:       () => ipcRenderer.invoke('bedrock-info'),
+    playBedrock:       (cible) => ipcRenderer.invoke('play-bedrock', cible),
     syncNow:           (packData) => ipcRenderer.send('sync-now', packData),
     openFolder:        (type, packId) => ipcRenderer.send('open-folder', type, packId),
     resetDefaults:     (packId) => ipcRenderer.send('reset-defaults', packId),
