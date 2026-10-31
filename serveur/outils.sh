@@ -56,8 +56,9 @@ case "${1:-}" in
     info "Datapacks actifs sur $s"
     cmd "$s" "datapack list enabled" || true
     info "Erreurs Skript et menus dans le journal de $s (les plus récentes en bas)"
-    vm "docker logs --tail 3000 mc-$s 2>&1 | sed 's/\x1b\[[0-9;]*m//g' \
-        | grep -iE -A8 'lqdm|skript.*(error|erreur)|data ?pack|dialog' | tail -120" || true ;;
+    vm "docker logs --since 6h mc-$s 2>&1 | sed 's/\x1b\[[0-9;]*m//g' \
+        | grep -E -B2 -A12 'lqdm|[Ss]kript|[Dd]ata ?pack|dialog|ERROR|Exception|kicked|lost connection' \
+        | grep -v 'INFO\]: \[Skript\] Loaded' | tail -200" || true ;;
   panneau)
     port="$(valeur panneau_port)"; domaine="$(valeur domaine)"
     if [[ ${2:-} == nouveau ]]; then
