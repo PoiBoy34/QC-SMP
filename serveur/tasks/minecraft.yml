@@ -703,7 +703,8 @@
       - >-
         Menus LQDM (datapack) : {% for r in datapack_final.results %}{{ r.item.nom }} {{ 'OK' if 'LQDM-Menus' in r.stdout else 'ABSENT (voir ./outils.sh erreurs ' ~ r.item.nom ~ ')' }}{{ ', ' if not loop.last }}{% endfor %}
       - "Discord : {{ 'tchat relié au salon ' ~ discord_salon if discord_actif | bool else 'pas de pont (discord_token et discord_salon vides)' }}"
-      - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
+      - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}{{ ', ' ~ panneau_port ~ '/tcp (panneau)' if (panneau | bool and https_actif | bool) else '' }}"
+      - "{{ ('Panneau de contrôle : https://' ~ domaine ~ ':' ~ panneau_port if https_actif | bool else 'Panneau de contrôle : http://' ~ vm_ip ~ ':' ~ panneau_port ~ ' (réseau local)') ~ ' — comptes : ' ~ (panneau_comptes | join(', ')) ~ ' — mots de passe : ./outils.sh panneau' if panneau | bool else 'Panneau de contrôle : désactivé' }}"
       - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"
       - >-
         {%- set x = etat_xbox.stdout | default('') -%}

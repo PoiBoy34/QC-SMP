@@ -10,6 +10,9 @@ xbox_retirer_amis_inactifs: false
 discord_token: ""            # défini dans secrets.yml (facultatif)
 discord_salon: ""
 discord_actif: "{{ (discord_token | length > 0) and (discord_salon | string | length > 0) }}"
+panneau: false
+panneau_port: 8443
+panneau_comptes: []
 uid_mc: 1000                 # uid utilisé par les images itzg (= premier utilisateur de la VM)
 
 debian_image_url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2

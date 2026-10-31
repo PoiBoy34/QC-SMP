@@ -46,6 +46,12 @@
       args:
         chdir: "{{ base }}"
 
+    - name: redemarrer panneau
+      ansible.builtin.systemd:
+        name: lqdm-panneau
+        daemon_reload: true
+        state: restarted
+
   tasks:
     - name: Attendre que la VM réponde en SSH
       ansible.builtin.wait_for_connection:
@@ -63,4 +69,6 @@
     - ansible.builtin.import_tasks: tasks/systeme.yml
     - ansible.builtin.import_tasks: tasks/docker.yml
     - ansible.builtin.import_tasks: tasks/https.yml
+    - ansible.builtin.import_tasks: tasks/panneau.yml
+      when: panneau | bool
     - ansible.builtin.import_tasks: tasks/minecraft.yml

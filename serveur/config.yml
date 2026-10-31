@@ -72,6 +72,15 @@ xbox_retirer_amis_inactifs: false
 # ID du salon : Discord → Paramètres → Avancés → Mode développeur, puis clic droit sur le salon.
 discord_salon: ""
 
+# --- Panneau de contrôle web ---------------------------------------------
+# https://<domaine>:<panneau_port> (ex. https://mc.qcsmp.mekhorizon.org:8443) : serveurs,
+# joueurs, admins, console, journaux, plugins. Un compte par personne ; mots de passe créés
+# sur la VM : ./outils.sh panneau. Retirer un nom ici retire son accès au prochain déploiement.
+# Port à rediriger sur le routeur vers la VM (TCP), comme ceux du jeu.
+panneau: true
+panneau_port: 8443
+panneau_comptes: ["PoiBoy34", "CampFire012"]
+
 # Liste blanche. true : seuls les joueurs ajoutés avec ./outils.sh whitelist entrent.
 # false : ouvert à tous ceux qui ont l'adresse (ou qui ajoutent le compte Xbox du serveur).
 # Les joueurs déjà ajoutés restent enregistrés : repasse à true quand tu veux, puis

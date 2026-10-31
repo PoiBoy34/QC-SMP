@@ -17,6 +17,7 @@ Un script, `./deploy.sh`, qui fait tout depuis ton PC :
 | `mc-minijeu1`… | Paper isolé par mini-jeu (Skript, SkBee) | 127.0.0.1 seulement |
 | `mc-mariadb` | Base LuckPerms : les rangs sont partagés par tous les serveurs | 127.0.0.1 seulement |
 | `mc-ddns` | Garde ton domaine pointé sur l'IP de la maison (si domaine + jeton) | — |
+| `lqdm-panneau` (service, pas un conteneur) | Panneau de contrôle web | Internet en HTTPS : 8443/tcp |
 
 Plus : liste blanche commune à tous les serveurs, sauvegarde chaque nuit, certificat HTTPS
 renouvelé automatiquement, et redémarrage automatique du proxy si l'IP de la maison change.
@@ -29,7 +30,8 @@ base de données. Ton plan veut le contraire : un conteneur par serveur, et un s
 `config.yml` et généré par Ansible. Passer au dédié revient donc à relancer le même déploiement
 sur une autre IP. Crafty n'aide pas non plus pour Geyser et NetherNet, qui sont la partie fragile.
 Les images [itzg](https://docker-minecraft-server.readthedocs.io/) téléchargent Paper, Velocity
-et les plugins toutes seules. Pour la console, `./outils.sh console smp` remplace le panneau web.
+et les plugins toutes seules. Pour gérer graphiquement, le réseau a son propre panneau web
+(voir « Panneau de contrôle »), fait pour ces conteneurs.
 
 ## Démarrage
 
@@ -65,6 +67,7 @@ déjà au ping.
 | 25565 | TCP | Java |
 | 19132 | **TCP et UDP** | Bedrock : signalisation NetherNet (TCP), ancien protocole RakNet (UDP) |
 | 19133 | UDP | Bedrock : connexions NetherNet (WebRTC), consoles de l'onglet Amis comprises |
+| 8443 | TCP | Panneau de contrôle web (HTTPS), si `panneau: true` |
 
 Le tunnel Cloudflare Zero Trust ne peut pas transporter ce trafic : il faut une vraie redirection
 de ports. Note que ça expose l'IP de la maison (risque DDoS noté dans le plan). C'est acceptable
@@ -225,6 +228,34 @@ le résumé d'Ansible affiche un code. Tu peux aussi le revoir avec :
 Ouvre https://www.microsoft.com/link, entre le code et connecte-toi avec le compte dédié. Le
 serveur accepte ensuite automatiquement les demandes d'ami.
 
+## Panneau de contrôle
+
+`https://mc.qcsmp.mekhorizon.org:8443` (le domaine du jeu, port `panneau_port`). Dans un
+navigateur, de partout, sans Tailscale :
+
+- **Tableau de bord** : chaque serveur (en marche ou non, CPU, mémoire, joueurs), mémoire,
+  CPU et disque de la VM ; démarrer, arrêter, redémarrer ; annonce à tous les joueurs.
+- **Joueurs** : tous ceux venus au moins une fois (Java et Bedrock), en ligne ou non, temps de
+  jeu, morts, distance… Fiche par joueur : envoyer sur un serveur, mode de jeu, message,
+  expulser, bannir, op, grade LuckPerms, liste blanche.
+- **Admins** : les op, en ajouter ou en retirer ; les grades LuckPerms.
+- **Console** : le journal en direct de chaque serveur (proxy compris) et une ligne de commande.
+- **Journaux** : les anciens journaux, avec filtre et téléchargement.
+- **Plugins et datapacks** : glisser-déposer un `.jar` (ou un datapack `.zip`), désactiver,
+  supprimer, puis redémarrer le serveur en un clic.
+- **Historique** : qui a fait quoi, avec son compte.
+
+Comptes : `panneau_comptes` dans `config.yml`, un par personne. Les mots de passe sont créés
+sur la VM au déploiement : `./outils.sh panneau` les affiche, `./outils.sh panneau nouveau
+<compte>` en change un (s'il a fuité). Retirer un nom de la liste coupe son accès au déploiement
+suivant.
+
+Sécurité : HTTPS avec le certificat Let's Encrypt du jeu, cookie de session sécurisé, 5 mauvais
+mots de passe = adresse bloquée une heure (fail2ban), service systemd durci. Un compte du
+panneau peut tout faire sur les serveurs (comme `docker`) : ne le donne qu'à des admins de
+confiance. Sans domaine ni certificat, le panneau reste fermé à Internet (réseau local seulement,
+en HTTP).
+
 ## Au quotidien
 
 ```bash
@@ -238,6 +269,8 @@ serveur accepte ensuite automatiquement les demandes d'ami.
 ./outils.sh snapshot                 # instantané Proxmox avant un tournage
 ./outils.sh tailscale                # connecter Tailscale sur l'hôte, ou voir son état
 ./outils.sh maj                      # mettre à jour Paper, Geyser, plugins
+./outils.sh panneau                  # adresse, comptes et mots de passe du panneau web
+./outils.sh erreurs spawn            # erreurs Skript et datapacks d'un serveur
 ssh mc                               # shell sur la VM (raccourci ajouté par deploy.sh)
 ```
 

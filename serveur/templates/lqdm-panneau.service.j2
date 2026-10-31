@@ -1,0 +1,34 @@
+# Généré par Ansible (mc-homelab) — panneau de contrôle web LQDM
+[Unit]
+Description=Panneau de contrôle LQDM
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User={{ vm_user }}
+Group={{ vm_user }}
+SupplementaryGroups=docker
+Environment=LQDM_BASE={{ base }}
+Environment=PANNEAU_PORT={{ panneau_port }}
+Environment=PANNEAU_COMPTES=/etc/lqdm-panneau/comptes
+Environment=DOCKER_CONFIG=/tmp/docker
+{% if https_actif | bool %}
+Environment=PANNEAU_CERTIFICAT={{ base }}/certs/fullchain.pem
+Environment=PANNEAU_CLE={{ base }}/certs/privkey.pem
+{% endif %}
+StateDirectory=lqdm-panneau
+ExecStart=/usr/bin/python3 -I /opt/lqdm-panneau/panneau.py
+Restart=always
+RestartSec=5
+# Durcissement : le panneau n'écrit que dans {{ base }} (plugins, mondes) et son historique.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths={{ base }}
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

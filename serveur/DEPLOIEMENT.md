@@ -99,6 +99,7 @@ pas déjà fait.
 | 25565 | TCP |
 | 19132 | **TCP et UDP** |
 | 19133 | UDP |
+| 8443 | TCP (panneau de contrôle web) |
 
 Vérifie que l'IP WAN affichée par le modem est la même que celle que donne
 `curl -4 ifconfig.me`. Si le modem affiche 100.64.x.x ou 10.x.x.x, ton FAI te met
@@ -187,3 +188,5 @@ Quand les tests console passent, publie le guide joueurs (le site l'affiche déj
 | Appliquer un changement de `config.yml` | `./deploy.sh --tags serveur` |
 | État de Tailscale | `./outils.sh tailscale` |
 | Shell sur la VM | `ssh mc` |
+| Panneau web : adresse et mots de passe | `./outils.sh panneau` |
+| Erreurs Skript / menus d'un serveur | `./outils.sh erreurs spawn` |

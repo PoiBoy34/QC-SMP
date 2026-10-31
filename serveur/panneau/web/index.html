@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panneau LQDM</title>
+  <link rel="icon" href="icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <!-- Connexion -->
+  <main id="ecran-connexion" class="connexion" hidden>
+    <form id="form-connexion" class="carte carte-connexion">
+      <img src="icone.svg" alt="" width="56" height="56">
+      <h1>Panneau LQDM</h1>
+      <p class="discret">Gestion du réseau Minecraft</p>
+      <label>Compte<input name="compte" autocomplete="username" required></label>
+      <label>Mot de passe<input name="mot_de_passe" type="password" autocomplete="current-password" required></label>
+      <p class="erreur" id="erreur-connexion" hidden></p>
+      <button class="bouton principal" type="submit">Se connecter</button>
+    </form>
+  </main>
+
+  <!-- Application -->
+  <div id="app" class="app" hidden>
+    <nav class="menu">
+      <div class="logo"><img src="icone.svg" alt="" width="32" height="32"><span>LQDM</span></div>
+      <button data-onglet="tableau" class="actif">Tableau de bord</button>
+      <button data-onglet="joueurs">Joueurs</button>
+      <button data-onglet="admins">Admins</button>
+      <button data-onglet="console">Console</button>
+      <button data-onglet="journaux">Journaux</button>
+      <button data-onglet="fichiers">Plugins et datapacks</button>
+      <button data-onglet="historique">Historique</button>
+      <div class="bas-menu">
+        <span id="compte-connecte" class="discret"></span>
+        <button id="deconnexion" class="lien">Se déconnecter</button>
+      </div>
+    </nav>
+
+    <main class="contenu">
+      <!-- Tableau de bord -->
+      <section id="tableau" class="onglet">
+        <header class="titre"><h2>Tableau de bord</h2><span class="discret" id="maj-tableau"></span></header>
+        <div class="tuiles" id="tuiles-systeme"></div>
+        <div class="grille-serveurs" id="serveurs"></div>
+        <form id="form-annonce" class="carte ligne">
+          <input name="texte" placeholder="Annonce à tous les joueurs (en jeu)" maxlength="200" required>
+          <button class="bouton principal">Envoyer</button>
+        </form>
+      </section>
+
+      <!-- Joueurs -->
+      <section id="joueurs" class="onglet" hidden>
+        <header class="titre">
+          <h2>Joueurs</h2>
+          <input id="filtre-joueurs" type="search" placeholder="Chercher un joueur">
+        </header>
+        <p class="discret">Les joueurs Bedrock (consoles, téléphones) ont un point devant leur nom.</p>
+        <div class="table-defile">
+          <table class="table">
+            <thead><tr><th>Joueur</th><th>État</th><th>Temps de jeu</th><th>Vu</th><th>Rôles</th><th></th></tr></thead>
+            <tbody id="liste-joueurs"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Admins -->
+      <section id="admins" class="onglet" hidden>
+        <header class="titre"><h2>Admins</h2></header>
+        <form id="form-admin" class="carte ligne">
+          <input name="joueur" placeholder="Pseudo Java, ou .Gamertag pour Bedrock" required pattern="\.?[A-Za-z0-9_]{1,20}">
+          <button class="bouton principal">Rendre admin (op)</button>
+        </form>
+        <div id="liste-admins" class="liste"></div>
+        <h3>Grades LuckPerms</h3>
+        <p class="discret">Les grades se donnent dans la fiche d'un joueur (onglet Joueurs), ou par la console : <code>lp creategroup moderateur</code>.</p>
+        <pre id="grades" class="sortie"></pre>
+      </section>
+
+      <!-- Console -->
+      <section id="console" class="onglet" hidden>
+        <header class="titre">
+          <h2>Console</h2>
+          <select id="serveur-console" class="choix-serveur"></select>
+        </header>
+        <pre id="sortie-console" class="terminal" aria-live="polite"></pre>
+        <form id="form-console" class="ligne">
+          <span class="invite">&gt;</span>
+          <input name="commande" placeholder="Commande sans /, ex. : time set day" autocomplete="off" required>
+          <button class="bouton principal">Envoyer</button>
+        </form>
+        <div class="actions-serveur" id="actions-console"></div>
+      </section>
+
+      <!-- Journaux -->
+      <section id="journaux" class="onglet" hidden>
+        <header class="titre">
+          <h2>Journaux</h2>
+          <select id="serveur-journaux" class="choix-serveur"></select>
+        </header>
+        <div class="deux-colonnes">
+          <div id="liste-journaux" class="liste fichiers"></div>
+          <div>
+            <div class="ligne"><input id="filtre-journal" type="search" placeholder="Filtrer les lignes (ex. : error, PoiBoy34)"><a id="telecharger-journal" class="bouton" href="#" hidden>Télécharger</a></div>
+            <pre id="texte-journal" class="terminal">Choisis un journal à gauche.</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Plugins et datapacks -->
+      <section id="fichiers" class="onglet" hidden>
+        <header class="titre">
+          <h2>Plugins et datapacks</h2>
+          <select id="serveur-fichiers" class="choix-serveur"></select>
+          <select id="genre-fichiers"><option value="plugins">Plugins (.jar)</option><option value="datapacks">Datapacks (.zip)</option></select>
+        </header>
+        <label class="depot" id="depot">
+          <input type="file" id="envoi-fichiers" multiple hidden>
+          <strong>Glisse tes fichiers ici</strong> ou clique pour choisir.
+          <span class="discret" id="aide-depot"></span>
+        </label>
+        <p class="avis" id="avis-redemarrage" hidden>Changement fait : <button class="lien" id="redemarrer-fichiers">redémarre le serveur</button> pour l'appliquer.</p>
+        <div id="liste-fichiers" class="liste"></div>
+        <p class="discret">Les plugins listés dans <code>serveur/group_vars/all.yml</code> (Modrinth) sont installés et mis à jour par <code>./deploy.sh</code> : les supprimer ici ne sert à rien, ils reviennent. Les mods du launcher (joueurs) se gèrent dans <code>modpacks/LQDM/mods.txt</code> sur GitHub.</p>
+      </section>
+
+      <!-- Historique -->
+      <section id="historique" class="onglet" hidden>
+        <header class="titre"><h2>Historique</h2><span class="discret">Qui a fait quoi sur le panneau</span></header>
+        <div class="table-defile">
+          <table class="table">
+            <thead><tr><th>Date</th><th>Compte</th><th>Action</th><th>Détails</th></tr></thead>
+            <tbody id="liste-historique"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Fiche joueur -->
+  <dialog id="fiche" class="carte fiche">
+    <form method="dialog" class="fermer"><button class="lien" aria-label="Fermer">✕</button></form>
+    <div id="contenu-fiche"></div>
+  </dialog>
+
+  <div id="notes" class="notes" aria-live="polite"></div>
+</body>
+</html>

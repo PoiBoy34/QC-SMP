@@ -1,0 +1,104 @@
+---
+# Panneau de contrôle web (serveur/panneau/) : https://<domaine>:<panneau_port>.
+# Un compte par nom de panneau_comptes, avec un mot de passe créé ici une seule fois
+# (./outils.sh panneau pour les voir). En HTTPS avec le certificat du jeu quand il existe ;
+# sans certificat, il reste fermé à Internet (réseau local seulement).
+
+- name: Panneau — noms de comptes valides
+  ansible.builtin.assert:
+    that: item is match('^[A-Za-z0-9_-]{1,32}$')
+    fail_msg: "panneau_comptes : « {{ item }} » ne doit contenir que lettres, chiffres, - et _"
+    quiet: true
+  loop: "{{ panneau_comptes }}"
+
+- name: Panneau — programme
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/panneau/"
+    dest: /opt/lqdm-panneau/
+    owner: root
+    group: root
+    mode: u=rwX,go=rX
+  notify: redemarrer panneau
+
+- name: Panneau — dossier des comptes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: "{{ vm_user }}"
+    mode: "0750"
+  loop:
+    - /etc/lqdm-panneau
+    - /etc/lqdm-panneau/comptes
+
+- name: Panneau — un mot de passe par compte (créé une seule fois)
+  ansible.builtin.shell: |
+    umask 027
+    tr -dc 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789' </dev/urandom | head -c 20 > "{{ item }}"
+    chgrp {{ vm_user }} "{{ item }}"
+  args:
+    chdir: /etc/lqdm-panneau/comptes
+    creates: /etc/lqdm-panneau/comptes/{{ item }}
+  loop: "{{ panneau_comptes }}"
+
+- name: Panneau — comptes existants
+  ansible.builtin.find:
+    paths: /etc/lqdm-panneau/comptes
+    file_type: file
+  register: comptes_panneau
+
+- name: Panneau — retirer les comptes qui ne sont plus dans config.yml
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ comptes_panneau.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: (item.path | basename) not in panneau_comptes
+
+- name: Panneau — service
+  ansible.builtin.template:
+    src: lqdm-panneau.service.j2
+    dest: /etc/systemd/system/lqdm-panneau.service
+    mode: "0644"
+  notify: redemarrer panneau
+
+- name: Panneau — pare-feu (Internet en HTTPS, sinon réseau local seulement)
+  ansible.builtin.command: >-
+    {{ 'ufw allow ' ~ panneau_port ~ '/tcp comment panneau' if https_actif | bool
+       else 'ufw allow from ' ~ item ~ ' to any port ' ~ panneau_port ~ ' proto tcp comment panneau' }}
+  loop: "{{ [ssh_origines[0]] if not https_actif | bool else ['internet'] }}"
+  register: ufw_panneau
+  changed_when: "'Skipping' not in ufw_panneau.stdout"
+
+# Après 5 mauvais mots de passe en 10 minutes, l'adresse est bloquée une heure.
+- name: Panneau — fail2ban (filtre)
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/filter.d/lqdm-panneau.conf
+    mode: "0644"
+    content: |
+      [Definition]
+      failregex = ^.*connexion refusée : compte .* depuis <HOST>$
+      journalmatch = _SYSTEMD_UNIT=lqdm-panneau.service
+  notify: redemarrer fail2ban
+
+- name: Panneau — fail2ban (règle)
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/lqdm-panneau.local
+    mode: "0644"
+    content: |
+      [lqdm-panneau]
+      enabled  = true
+      backend  = systemd
+      port     = {{ panneau_port }}
+      maxretry = 5
+      findtime = 10m
+      bantime  = 1h
+  notify: redemarrer fail2ban
+
+- name: Panneau — démarré au boot
+  ansible.builtin.systemd:
+    name: lqdm-panneau
+    daemon_reload: true
+    enabled: true
+    state: started

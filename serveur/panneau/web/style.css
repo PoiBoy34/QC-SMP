@@ -1,0 +1,175 @@
+/* Panneau LQDM : couleurs du drapeau du Québec, thème sombre. */
+:root {
+  --bleu: #003da5;
+  --bleu-clair: #2f6fe0;
+  --fond: #0b1220;
+  --panneau: #121b2e;
+  --carte: #172238;
+  --bord: #26324c;
+  --texte: #e8edf7;
+  --discret: #93a0b8;
+  --vert: #2fbf71;
+  --rouge: #e5484d;
+  --or: #f0b429;
+  --rayon: 10px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--fond); color: var(--texte);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.05rem; margin: 1.4rem 0 .6rem; }
+code, .code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .88em; }
+.discret { color: var(--discret); }
+a { color: var(--bleu-clair); }
+
+input, select, button { font: inherit; color: inherit; }
+input, select {
+  background: var(--fond); border: 1px solid var(--bord); border-radius: 8px;
+  padding: .55rem .7rem; min-width: 0;
+}
+input:focus, select:focus { outline: 2px solid var(--bleu-clair); outline-offset: 1px; }
+label { display: grid; gap: .3rem; font-weight: 600; text-align: left; }
+
+.bouton {
+  background: var(--carte); border: 1px solid var(--bord); border-radius: 8px;
+  padding: .5rem .9rem; cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+.bouton:hover { border-color: var(--bleu-clair); }
+.bouton.principal { background: var(--bleu); border-color: var(--bleu); color: #fff; font-weight: 600; }
+.bouton.principal:hover { background: var(--bleu-clair); }
+.bouton.danger { color: #ffb3b5; border-color: #5a2a33; }
+.bouton.danger:hover { background: #3a1820; }
+.lien { background: none; border: 0; color: var(--bleu-clair); cursor: pointer; padding: 0; text-decoration: underline; }
+
+.carte { background: var(--carte); border: 1px solid var(--bord); border-radius: var(--rayon); padding: 1rem; }
+.ligne { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.ligne input { flex: 1 1 14rem; }
+
+/* Connexion */
+.connexion { min-height: 100%; display: grid; place-items: center; padding: 1rem; }
+.carte-connexion { width: min(24rem, 100%); display: grid; gap: .9rem; text-align: center; padding: 2rem; }
+.carte-connexion img { margin: 0 auto; }
+.erreur { color: #ffb3b5; margin: 0; }
+
+/* Mise en page */
+.app { display: grid; grid-template-columns: 15rem 1fr; min-height: 100%; }
+.menu {
+  background: var(--panneau); border-right: 1px solid var(--bord); padding: 1rem .7rem;
+  display: flex; flex-direction: column; gap: .2rem; position: sticky; top: 0; height: 100vh;
+}
+.logo { display: flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.2rem; padding: .3rem .5rem 1rem; }
+.menu [data-onglet] {
+  text-align: left; background: none; border: 0; border-radius: 8px; padding: .6rem .8rem;
+  cursor: pointer; color: var(--discret); font-weight: 600;
+}
+.menu [data-onglet]:hover { background: var(--carte); color: var(--texte); }
+.menu [data-onglet].actif { background: var(--bleu); color: #fff; }
+.bas-menu { margin-top: auto; display: grid; gap: .3rem; padding: .5rem; font-size: .9rem; }
+.contenu { padding: 1.5rem; min-width: 0; }
+.onglet { display: grid; gap: 1rem; max-width: 80rem; }
+.titre { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.titre h2 { margin-right: auto; }
+
+/* Tableau de bord */
+.tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: .8rem; }
+.tuile { display: grid; gap: .2rem; }
+.tuile strong { font-size: 1.35rem; }
+.barre { height: 6px; background: var(--fond); border-radius: 3px; overflow: hidden; margin-top: .3rem; }
+.barre span { display: block; height: 100%; background: var(--bleu-clair); }
+.barre.haut span { background: var(--rouge); }
+.grille-serveurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: .8rem; }
+.serveur header { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.serveur header .discret { width: 100%; font-size: .85rem; }
+.serveur dl { display: grid; grid-template-columns: auto 1fr; gap: .2rem .8rem; margin: .8rem 0; }
+.serveur dt { color: var(--discret); }
+.serveur dd { margin: 0; }
+.eteint { opacity: .7; }
+.pastille { width: .65rem; height: .65rem; border-radius: 50%; display: inline-block; }
+.pastille.verte { background: var(--vert); box-shadow: 0 0 8px var(--vert); }
+.pastille.rouge { background: var(--rouge); }
+.joueurs-serveur { margin: 0 0 .8rem; font-size: .9rem; color: var(--discret); }
+.actions-serveur { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+/* Tables et listes */
+.table-defile { overflow-x: auto; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.table { width: 100%; border-collapse: collapse; background: var(--carte); }
+.table th, .table td { padding: .6rem .8rem; text-align: left; border-bottom: 1px solid var(--bord); vertical-align: middle; }
+.table th { color: var(--discret); font-weight: 600; font-size: .85rem; background: var(--panneau); }
+.table tr:last-child td { border-bottom: 0; }
+.joueur { display: inline-flex; align-items: center; gap: .55rem; }
+.tete { border-radius: 4px; image-rendering: pixelated; background: var(--fond); }
+.roles { display: inline-flex; gap: .3rem; flex-wrap: wrap; }
+.badge { font-size: .75rem; padding: .1rem .5rem; border-radius: 99px; background: var(--fond); border: 1px solid var(--bord); white-space: nowrap; }
+.badge.vert { color: #8ff0b8; border-color: #1f5a3c; }
+.badge.rouge { color: #ffb3b5; border-color: #5a2a33; }
+.badge.or { color: #ffd77a; border-color: #5c4614; }
+.liste { display: grid; gap: .5rem; }
+.element { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: .7rem 1rem; }
+.element > :first-child { margin-right: auto; display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+
+/* Console et journaux */
+.terminal, .sortie {
+  background: #05080f; border: 1px solid var(--bord); border-radius: var(--rayon);
+  font: 13px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  padding: .8rem; margin: 0; overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.terminal { height: min(62vh, 40rem); }
+.sortie { max-height: 18rem; }
+.l-erreur { color: #ff8b8f; }
+.l-avert { color: #ffd77a; }
+.l-commande { color: #7fb2ff; font-weight: 700; }
+.l-reponse { color: #b6f5cf; }
+.invite { font-family: ui-monospace, monospace; color: var(--bleu-clair); font-weight: 700; }
+.deux-colonnes { display: grid; grid-template-columns: 17rem 1fr; gap: 1rem; align-items: start; }
+.deux-colonnes > div { display: grid; gap: .6rem; min-width: 0; }
+.fichiers { max-height: 70vh; overflow: auto; }
+.element-fichier {
+  display: grid; text-align: left; gap: .1rem; background: var(--carte); border: 1px solid var(--bord);
+  border-radius: 8px; padding: .5rem .7rem; cursor: pointer;
+}
+.element-fichier.actif, .element-fichier:hover { border-color: var(--bleu-clair); }
+.element-fichier .discret { font-size: .8rem; }
+
+/* Dépôt de fichiers */
+.depot {
+  display: block; text-align: center; padding: 1.6rem; border: 2px dashed var(--bord);
+  border-radius: var(--rayon); cursor: pointer; font-weight: 400;
+}
+.depot.survol, .depot:hover { border-color: var(--bleu-clair); background: var(--panneau); }
+.avis { background: #2a2410; border: 1px solid #5c4614; border-radius: 8px; padding: .6rem .9rem; margin: 0; }
+
+/* Fiche joueur */
+.fiche { width: min(40rem, calc(100% - 2rem)); color: var(--texte); padding: 1.4rem; }
+.fiche::backdrop { background: rgba(0, 0, 0, .6); }
+.fermer { position: absolute; top: .8rem; right: 1rem; }
+.fermer .lien { text-decoration: none; font-size: 1.2rem; color: var(--discret); }
+.entete-fiche { display: flex; align-items: center; gap: .8rem; }
+.entete-fiche .tete { width: 48px; height: 48px; }
+.entete-fiche > div { display: grid; gap: .3rem; }
+.infos { display: grid; grid-template-columns: auto 1fr; gap: .3rem 1rem; margin: 1rem 0 0; }
+.infos dt { color: var(--discret); }
+.infos dd { margin: 0; word-break: break-all; }
+.actions-joueur { display: flex; flex-wrap: wrap; gap: .5rem; }
+.actions-joueur .ligne { width: 100%; }
+
+/* Notifications */
+.notes { position: fixed; bottom: 1rem; right: 1rem; display: grid; gap: .5rem; z-index: 10; max-width: min(28rem, calc(100% - 2rem)); }
+.note { background: var(--carte); border: 1px solid var(--bord); border-left: 4px solid var(--vert); border-radius: 8px; padding: .6rem .9rem; box-shadow: 0 6px 20px rgba(0, 0, 0, .4); }
+.note.erreur { border-left-color: var(--rouge); }
+
+/* Téléphone */
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; }
+  .menu { position: static; height: auto; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--bord); }
+  .logo { width: 100%; padding-bottom: .4rem; }
+  .bas-menu { margin: 0; width: 100%; display: flex; justify-content: space-between; }
+  .contenu { padding: 1rem; }
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .fichiers { max-height: 14rem; }
+}

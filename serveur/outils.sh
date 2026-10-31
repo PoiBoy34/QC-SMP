@@ -23,7 +23,8 @@ Usage : ./outils.sh <commande>
                            Java : JosephMC     Bedrock : .Gamertag (avec le point de Floodgate)
   donner <joueur> <item> [n]  donne un item custom de contenu/items (ex. poutine)
   erreurs <serveur>        erreurs récentes de Skript et du datapack des menus (à m'envoyer)
-  panneau                  adresse et mot de passe du panneau de contrôle web
+  panneau                  adresse, comptes et mots de passe du panneau de contrôle web
+  panneau nouveau <compte> nouveau mot de passe pour ce compte (s'il a fuité)
   nethernet                état NetherNet de Geyser (adresses annoncées, signalisation)
   verifier                 le serveur vu d'Internet (comme le site) : DNS, Java, Bedrock
   xbox                     dernier code de connexion du compte Xbox (MCXboxBroadcast)
@@ -58,7 +59,17 @@ case "${1:-}" in
     vm "docker logs --tail 3000 mc-$s 2>&1 | sed 's/\x1b\[[0-9;]*m//g' \
         | grep -iE -A8 'lqdm|skript.*(error|erreur)|data ?pack|dialog' | tail -120" || true ;;
   panneau)
-    vm "sudo cat /opt/lqdm-panneau/acces.txt" ;;
+    port="$(valeur panneau_port)"; domaine="$(valeur domaine)"
+    if [[ ${2:-} == nouveau ]]; then
+      compte="${3:?compte ? ex. : ./outils.sh panneau nouveau CampFire012}"
+      [[ $compte =~ ^[A-Za-z0-9_-]{1,32}$ ]] || erreur "nom de compte invalide"
+      vm "sudo test -f /etc/lqdm-panneau/comptes/$compte" || erreur "pas de compte $compte (voir panneau_comptes dans config.yml)"
+      vm "sudo sh -c \"umask 027; tr -dc 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789' </dev/urandom | head -c 20 > /etc/lqdm-panneau/comptes/$compte; chgrp \$(stat -c %G /etc/lqdm-panneau/comptes) /etc/lqdm-panneau/comptes/$compte\" && sudo systemctl restart lqdm-panneau"
+      ok "nouveau mot de passe pour $compte (tout le monde est déconnecté du panneau)"
+    fi
+    echo "Adresse : https://${domaine:-$VM_IP}:${port:-8443}"
+    echo
+    vm "sudo sh -c 'for f in /etc/lqdm-panneau/comptes/*; do [ -f \"\$f\" ] && echo \"  compte : \$(basename \"\$f\")   mot de passe : \$(cat \"\$f\")\"; done'" ;;
   whitelist)
     pseudo="${2:?pseudo ?}"
     if [[ $pseudo == .* ]]; then
