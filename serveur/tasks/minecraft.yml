@@ -396,26 +396,15 @@
         path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
         timeout: 300
 
-    - name: MCXboxBroadcast — plage de ports UDP fixe (pour la redirection du routeur)
-      ansible.builtin.replace:
-        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
-        regexp: '(ice-port-range:\n(?:[ \t]*#.*\n|[ \t]*max:.*\n)*[ \t]*min:)[ \t]*\d+'
-        replace: '\g<1> {{ xbox_ice_min }}'
-      notify: redemarrer proxy
-
-    - name: MCXboxBroadcast — plage de ports UDP fixe (fin)
-      ansible.builtin.replace:
-        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
-        regexp: '(ice-port-range:\n(?:[ \t]*#.*\n|[ \t]*min:.*\n)*[ \t]*max:)[ \t]*\d+'
-        replace: '\g<1> {{ xbox_ice_max }}'
-      notify: redemarrer proxy
-
-    - name: MCXboxBroadcast — annoncer le domaine plutôt que l'IP du moment
+    # Depuis Bedrock 26.60, MCXboxBroadcast relaie la demande de connexion de la console à la
+    # signalisation de Geyser, puis la console se connecte à Geyser en direct (19133/UDP) : plus
+    # de ports à lui. Avec HTTPS, ce relais vérifie le certificat sur le NOM du serveur : il doit
+    # viser le domaine (que le proxy résout en local, voir extra_hosts), pas 127.0.0.1.
+    - name: MCXboxBroadcast — relayer vers Geyser (par le domaine si HTTPS)
       ansible.builtin.replace:
         path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
         regexp: '^([ \t]*remote-address:).*$'
-        replace: '\g<1> {{ domaine }}'
-      when: domaine | default('') | length > 0
+        replace: '\g<1> {{ domaine if https_actif | bool else "auto" }}'
       notify: redemarrer proxy
 
 # --- Sauvegardes et surveillance ------------------------------------------------

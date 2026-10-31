@@ -106,8 +106,7 @@
 - name: Ports publics du réseau Minecraft
   ansible.builtin.set_fact:
     ports_publics: >-
-      {{ [port_java ~ '/tcp', port_bedrock ~ '/tcp', port_bedrock ~ '/udp', port_webrtc ~ '/udp']
-         + ([xbox_ice_min ~ ':' ~ xbox_ice_max ~ '/udp'] if xbox_broadcast | bool else []) }}
+      {{ [port_java ~ '/tcp', port_bedrock ~ '/tcp', port_bedrock ~ '/udp', port_webrtc ~ '/udp'] }}
 
 - name: Pare-feu — politique par défaut
   ansible.builtin.command: "{{ item }}"

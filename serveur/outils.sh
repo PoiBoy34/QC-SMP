@@ -29,6 +29,7 @@ Usage : ./outils.sh <commande>
   sauvegarde               lance une sauvegarde maintenant
   snapshot [nom]           instantané Proxmox de la VM (avant un tournage)
   snapshots                liste les instantanés
+  tailscale                connecte l'hôte Proxmox à ton Tailscale, ou affiche son état
   ssh                      shell sur la VM
 EOF
 }
@@ -92,6 +93,19 @@ print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "
     ok "retour arrière possible dans Proxmox : VM $VM_ID > Snapshots > $nom > Rollback" ;;
   snapshots)
     proxmox "qm listsnapshot $VM_ID" ;;
+  tailscale)
+    proxmox "command -v tailscale >/dev/null" \
+      || erreur "Tailscale n'est pas installé sur l'hôte : mets « tailscale: true » dans config.yml puis ./deploy.sh --tags tailscale"
+    if proxmox "tailscale status >/dev/null 2>&1"; then
+      proxmox "tailscale status; echo; echo \"Adresse Tailscale de l'hôte : \$(tailscale ip -4)\""
+    else
+      pont="$(valeur vm_bridge)"
+      reseau=$(proxmox "ip -4 route show dev ${pont:-vmbr0} proto kernel scope link | awk '{print \$1; exit}'")
+      info "Ouvre le lien affiché et connecte-toi à ton compte Tailscale (réseau annoncé : $reseau)"
+      ssh -t "${SSH_OPTS[@]}" "root@$PROXMOX_IP" "tailscale up --advertise-routes=$reseau --accept-dns=false"
+      ok "hôte connecté. Une seule fois, sur https://login.tailscale.com/admin/machines, menu « … » de l'hôte :"
+      echo "     « Edit route settings » → coche $reseau, puis « Disable key expiry »."
+    fi ;;
   ssh)
     vm_tty ;;
   *)

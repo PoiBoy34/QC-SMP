@@ -32,7 +32,8 @@ services:
       LUCKPERMS_DATA_USERNAME: luckperms
       LUCKPERMS_DATA_PASSWORD: ${LP_DB_PASSWORD}
       LUCKPERMS_MESSAGING_SERVICE: sql
-      # Geyser — NetherNet (Bedrock 26.60, 27 octobre 2026)
+      # Geyser — NetherNet : depuis Bedrock 26.60 (27 octobre 2026), le seul protocole des
+      # joueurs Bedrock à jour. RakNet reste ouvert (transport « both ») pour les appareils en retard.
       GEYSER_BEDROCK_PORT: "{{ port_bedrock }}"
       GEYSER_BEDROCK_TRANSPORT: "{{ geyser_transport }}"
       GEYSER_BEDROCK_WEBRTC_PORT: "{{ port_webrtc }}"
@@ -48,6 +49,12 @@ services:
     # (joueurs d'Internet) et l'IP locale (joueurs à la maison, en direct sur le réseau local).
     # Tenu à jour par bin/veille-proxy.sh quand l'IP de la maison change.
     env_file: [{{ base }}/geyser-adresses.env]
+{% if https_actif | bool %}
+    # Le relais de MCXboxBroadcast (consoles, onglet Amis) joint la signalisation HTTPS de
+    # Geyser par le domaine, pour que le certificat corresponde, mais sans sortir de la VM.
+    extra_hosts:
+      - "{{ domaine }}:127.0.0.1"
+{% endif %}
     volumes:
       - {{ base }}/proxy:/server
       - {{ base }}/certs:/certs:ro

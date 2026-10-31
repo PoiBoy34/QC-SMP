@@ -8,6 +8,14 @@
   tasks:
     - ansible.builtin.import_tasks: tasks/proxmox-vm.yml
 
+- name: Proxmox — Tailscale (accès à distance pour l'admin)
+  hosts: proxmox
+  gather_facts: false
+  tags: [proxmox, tailscale]
+  tasks:
+    - ansible.builtin.import_tasks: tasks/tailscale.yml
+      when: tailscale | bool
+
 - name: VM — sécurité, Docker et réseau Minecraft
   hosts: mc
   gather_facts: false

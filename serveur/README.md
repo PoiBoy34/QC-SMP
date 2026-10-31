@@ -11,7 +11,7 @@ Un script, `./deploy.sh`, qui fait tout depuis ton PC :
 
 | Conteneur | Rôle | Joignable |
 | --- | --- | --- |
-| `mc-proxy` | Velocity + Geyser (NetherNet) + Floodgate + LuckPerms + MCXboxBroadcast | Internet : 25565/tcp, 19132/tcp+udp, 19133/udp, 19140-19149/udp |
+| `mc-proxy` | Velocity + Geyser (NetherNet) + Floodgate + LuckPerms + MCXboxBroadcast | Internet : 25565/tcp, 19132/tcp+udp, 19133/udp |
 | `mc-spawn` | Paper, hub en aventure, sans mobs ni faim (FancyNpcs, FAWE) | 127.0.0.1 seulement |
 | `mc-smp` | Paper survie (CoreProtect) | 127.0.0.1 seulement |
 | `mc-minijeu1`… | Paper isolé par mini-jeu (Skript, SkBee) | 127.0.0.1 seulement |
@@ -35,8 +35,8 @@ et les plugins toutes seules. Pour la console, `./outils.sh console smp` remplac
 
 **Il te faut :** un PC sous Linux, macOS ou Windows avec WSL, et Ansible
 (`sudo apt install ansible`, `brew install ansible` ou `pipx install --include-deps ansible`).
-Il te faut aussi le mot de passe root de Proxmox et une IP libre sur ton réseau, hors de la plage
-DHCP du routeur.
+Il te faut aussi le mot de passe root de Proxmox et une IP libre pour la VM, à réserver dans le
+modem (chez toi : Proxmox en 192.168.2.133, VM en 192.168.2.134, déjà dans `config.yml`).
 
 ```bash
 # 1. Mets tes deux IP dans config.yml (proxmox_ip, vm_ip). Le reste est optionnel.
@@ -45,7 +45,7 @@ nano config.yml
 # 2. Lance le déploiement (10 à 20 min la première fois)
 ./deploy.sh
 
-# 3. À la fin, Ansible affiche un résumé : ports à ouvrir, état NetherNet, code Xbox.
+# 3. À la fin, Ansible affiche un résumé : MAC de la VM, ports à ouvrir, état NetherNet, code Xbox.
 ```
 
 Le script se relance sans risque : il ne recrée rien de ce qui existe déjà. Après une modification
@@ -64,8 +64,7 @@ déjà au ping.
 | --- | --- | --- |
 | 25565 | TCP | Java |
 | 19132 | **TCP et UDP** | Bedrock : signalisation NetherNet (TCP), ancien protocole RakNet (UDP) |
-| 19133 | UDP | Bedrock : connexions NetherNet (WebRTC) |
-| 19140-19149 | UDP | Méthode « Ami » (MCXboxBroadcast) |
+| 19133 | UDP | Bedrock : connexions NetherNet (WebRTC), consoles de l'onglet Amis comprises |
 
 Le tunnel Cloudflare Zero Trust ne peut pas transporter ce trafic : il faut une vraie redirection
 de ports. Note que ça expose l'IP de la maison (risque DDoS noté dans le plan). C'est acceptable
@@ -128,41 +127,69 @@ Ce qui compte vraiment pour le lag, par ordre d'importance :
    la même que celle de `curl -4 ifconfig.me`. Si le routeur affiche 100.64.x.x ou 10.x.x.x,
    les redirections de ports ne peuvent pas marcher : demande une IP publique à ton FAI.
 
-## NetherNet : à faire avant le 27 octobre
+## NetherNet (Bedrock 26.60 et plus)
 
-Ce qui est déjà réglé par le déploiement (vérifié dans le code source de Geyser) :
+Depuis le **27 octobre 2026** (Bedrock 26.60), les joueurs Bedrock à jour ne se connectent
+plus qu'en NetherNet : signalisation en TCP, puis connexion WebRTC en UDP. Ce que le déploiement
+règle (vérifié dans le code source de Geyser et de MCXboxBroadcast, au 31 octobre) :
 
-- `transport: both` : Geyser accepte RakNet (consoles pas encore à jour) **et** NetherNet.
-  Par défaut, Geyser reste en `raknet` seul : sans ce réglage, plus aucun joueur Bedrock n'entre
-  après le 27. Quand toutes les consoles sont en 26.60, mets `geyser_transport: "nethernet"` et
-  redéploie.
-- Signalisation intégrée sur 19132/TCP, WebRTC sur 19133/UDP, HTTPS si le domaine est configuré.
+- `geyser_transport: "both"` : NetherNet **et** l'ancien protocole RakNet, pour les appareils
+  pas encore à jour (Geyser 2.12.1 accepte Bedrock 26.40 à 26.60). Geyser est passé en
+  `nethernet` par défaut le 26 octobre. Quand plus personne n'est en retard, mets
+  `geyser_transport: "nethernet"` et redéploie.
+- Signalisation intégrée sur 19132/TCP, WebRTC sur 19133/UDP, en HTTPS avec le certificat du domaine.
 - Geyser annonce l'IP publique (joueurs d'Internet) **et** l'IP locale (joueurs à la maison, en
   direct). Si l'IP de la maison change, `veille-proxy.sh` met l'annonce à jour en moins de 10 min.
-- Geyser est retéléchargé à chaque redémarrage : `./outils.sh maj` prend le dernier build.
+- **MCXboxBroadcast** (onglet Amis des consoles) n'ouvre plus de ports à lui : il relaie la
+  demande de la console à la signalisation de Geyser, et la console se connecte ensuite à Geyser
+  comme tout le monde (19133/UDP). Ce relais vérifie le certificat HTTPS sur le nom du serveur :
+  le déploiement le fait donc viser le domaine, que le conteneur du proxy résout en local
+  (`extra_hosts`), sans passer par le modem.
+- Geyser et MCXboxBroadcast sont retéléchargés à chaque redémarrage du proxy : `./outils.sh maj`
+  prend les derniers builds.
 
 Vérification : `./outils.sh nethernet` doit montrer la signalisation démarrée et les adresses annoncées.
 
-**Tests à faire après le 27, avant de publier le guide**, sur Xbox, PlayStation et Switch :
+**Tests à faire au premier déploiement, avant de publier le guide**, sur Xbox, PlayStation et Switch :
 
 | Test | Xbox | PS | Switch |
 | --- | --- | --- | --- |
-| Méthode 1 : ajouter le compte du serveur en ami → onglet Amis → Rejoindre | ☐ | ☐ | ☐ |
-| Méthode 2 : DNS BedrockConnect → serveur vedette → menu → adresse | ☐ | ☐ | ☐ |
-| Pas de question « faire confiance » (si HTTPS) | ☐ | ☐ | ☐ |
+| Ajouter le compte du serveur en ami → onglet Amis → Rejoindre | ☐ | ☐ | ☐ |
+| Pas de question « faire confiance » (HTTPS) | ☐ | ☐ | ☐ |
+| Avec un compte enfant (autorisations parentales) | ☐ | ☐ | ☐ |
 | Mobile ou Windows : ajout direct de l'adresse | ☐ | | |
 | Un joueur depuis la maison (même réseau que le serveur) | ☐ | | |
 
-État des outils au 23 octobre :
+État des outils au 31 octobre :
 
-- **MCXboxBroadcast (méthode 1)** : passé à NetherNet en septembre 2026, compatible 26.50.
-  C'est la méthode à mettre en avant.
-- **BedrockConnect (méthode 2)** : aucune trace de NetherNet dans le projet (dernière version :
-  26.50, le 15 septembre). Elle risque de ne plus marcher le 27 tant que BedrockConnect n'aura pas
-  publié de mise à jour. Mieux vaut retirer la méthode 2 du guide, ou la marquer « en attente »,
-  jusqu'à ce que le test passe.
+- **Geyser 2.12.1** : 26.60 supporté depuis le 21 octobre, NetherNet par défaut depuis le 26.
+- **MCXboxBroadcast** : 26.60 depuis le 27 octobre (build 162 du 29 octobre), nouveau système
+  de relais. C'est la méthode console du guide.
+- **BedrockConnect** : compatible 26.60 et NetherNet depuis le 27 octobre, mais il faut changer
+  le DNS de chaque console vers un serveur tiers. Pas installé : à garder en plan B si un modèle
+  de console refusait la méthode Amis.
 
-## Compte Xbox du serveur (méthode 1)
+## Accès à distance : Tailscale
+
+Avec `tailscale: true` (par défaut), le déploiement installe Tailscale **sur l'hôte Proxmox**,
+qui devient routeur de sous-réseau : tes appareils Tailscale joignent tout le réseau de la maison
+(interface Proxmox, `ssh mc`, `./outils.sh`, `./deploy.sh`) de partout. Les joueurs n'y passent
+jamais.
+
+- Sur l'hôte plutôt que dans un conteneur : rien à bricoler (pas de `/dev/net/tun` à passer à un
+  LXC), et l'accès reste possible quand une VM ou un conteneur est en panne, c'est-à-dire
+  justement quand on en a besoin.
+- Paquet officiel (dépôt pkgs.tailscale.com, comme l'installateur de Tailscale). Seul ce dépôt
+  est mis à jour : sans abonnement Proxmox, un `apt update` complet échoue sur le dépôt *enterprise*.
+- `--accept-dns=false` : Proxmox garde la main sur son DNS. Routage IPv4 seulement, pour ne pas
+  couper l'IPv6 automatique de l'hôte.
+- Connexion : clé `tailscale_authkey` dans `secrets.yml`, ou `./outils.sh tailscale` (lien à ouvrir).
+- Une seule fois, dans la console Tailscale : approuver la route `192.168.2.0/24` et désactiver
+  l'expiration de la clé de l'hôte (voir le [mini guide](DEPLOIEMENT.md), étape 5).
+- Depuis un tailnet, la VM voit les connexions arriver de l'IP de l'hôte (Tailscale les traduit) :
+  le pare-feu de la VM, qui accepte SSH depuis le réseau local et l'hôte, n'a rien à changer.
+
+## Compte Xbox du serveur (onglet Amis des consoles)
 
 Crée un compte Microsoft **dédié** (jamais le tien : il peut être signalé). Au premier démarrage,
 le résumé d'Ansible affiche un code. Tu peux aussi le revoir avec :
@@ -184,6 +211,7 @@ serveur accepte ensuite automatiquement les demandes d'ami.
 ./outils.sh console smp              # console (« exit » pour sortir, le serveur continue)
 ./outils.sh logs proxy
 ./outils.sh snapshot                 # instantané Proxmox avant un tournage
+./outils.sh tailscale                # connecter Tailscale sur l'hôte, ou voir son état
 ./outils.sh maj                      # mettre à jour Paper, Geyser, plugins
 ssh mc                               # shell sur la VM (raccourci ajouté par deploy.sh)
 ```

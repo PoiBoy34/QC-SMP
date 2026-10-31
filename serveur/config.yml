@@ -6,12 +6,12 @@
 # Aucun secret ici : ce fichier est versionné sur GitHub.
 
 # --- Réseau (OBLIGATOIRE) --------------------------------------------
-proxmox_ip: "192.168.1.10"   # IP de ton hôte Proxmox (celle de l'interface web, sans :8006)
-vm_ip: "192.168.1.50"        # IP fixe à donner à la VM Minecraft (libre, hors plage DHCP du routeur)
+proxmox_ip: "192.168.2.133"  # IP de ton hôte Proxmox (celle de l'interface web, sans :8006)
+vm_ip: "192.168.2.134"       # IP fixe de la VM Minecraft : réserve-la dans le modem (voir DEPLOIEMENT.md, étape 4)
 
-# Passerelle, masque et DNS sont détectés automatiquement sur l'hôte Proxmox.
-# Décommente seulement pour forcer une valeur :
-# vm_gateway: "192.168.1.1"
+# Passerelle, masque et DNS sont détectés automatiquement sur l'hôte Proxmox
+# (chez toi : passerelle 192.168.2.1, masque /24). Décommente seulement pour forcer une valeur :
+# vm_gateway: "192.168.2.1"
 # vm_cidr: 24
 # vm_dns: "1.1.1.1"
 
@@ -39,6 +39,14 @@ domaine: "mc.qcsmp.mekhorizon.org"   # adresse du jeu : la même que dans catalo
 # Sans jeton Cloudflare dans secrets.yml, crée toi-même l'enregistrement A (DNS only) vers ton IP.
 email_letsencrypt: ""        # pour les avis d'expiration (optionnel)
 
+# --- Tailscale : accès à distance pour l'admin ---------------------------
+# Installe Tailscale sur l'hôte Proxmox, qui ouvre le réseau de la maison à TES appareils
+# Tailscale, de partout : interface Proxmox, « ssh mc », ./outils.sh, ./deploy.sh.
+# Les joueurs ne passent jamais par là. Clé dans secrets.yml (tailscale_authkey), ou
+# sans clé : ./outils.sh tailscale après le déploiement.
+tailscale: true
+# tailscale_routes: "192.168.2.0/24"   # réseau annoncé, détecté sur l'hôte : décommente pour forcer
+
 # --- Minecraft ----------------------------------------------------------
 nom_projet: "Les Québécois De Minecraft"
 # Doit correspondre à la version du launcher (« minecraft » dans catalog.json, à la racine du dépôt QC-SMP).
@@ -46,11 +54,12 @@ nom_projet: "Les Québécois De Minecraft"
 mc_version: "LATEST"
 fuseau: "America/Toronto"
 
-# NetherNet : "both" accepte l'ancien (RakNet) ET le nouveau protocole.
-# Passe à "nethernet" quand toutes les consoles sont en Bedrock 26.60+.
+# NetherNet : depuis le 27 octobre 2026 (Bedrock 26.60), les joueurs Bedrock à jour ne se
+# connectent plus qu'en NetherNet. "both" garde aussi l'ancien protocole (RakNet) pour les
+# appareils pas encore à jour (Geyser accepte encore 26.40 à 26.52). "nethernet" = NetherNet seul.
 geyser_transport: "both"
 
-# Diffusion du serveur dans l'onglet Amis des consoles (méthode 1 du guide).
+# Diffusion du serveur dans l'onglet Amis des consoles (MCXboxBroadcast, la méthode du guide).
 # Utilise un compte Xbox DÉDIÉ, jamais le tien.
 xbox_broadcast: true
 

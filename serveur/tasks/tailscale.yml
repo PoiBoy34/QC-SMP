@@ -1,0 +1,137 @@
+---
+# Tailscale sur l'hôte Proxmox : l'accès à distance de l'admin, jamais celui des joueurs.
+# L'hôte devient « routeur de sous-réseau » : de partout, tes appareils Tailscale joignent
+# l'interface Proxmox, la VM (ssh mc, ./outils.sh) et le reste du réseau de la maison.
+# Directement sur l'hôte plutôt que dans un conteneur : rien à bricoler (pas de /dev/net/tun à
+# passer), et l'accès reste possible même quand une VM ou un conteneur est en panne.
+
+- name: Tailscale — version de Debian et réseau de la maison
+  ansible.builtin.shell: |
+    set -euo pipefail
+    . /etc/os-release
+    reseau=$(ip -4 route show dev {{ vm_bridge }} proto kernel scope link | awk '{print $1; exit}')
+    printf '{"debian":"%s","reseau":"%s"}\n' "$VERSION_CODENAME" "$reseau"
+  args:
+    executable: /bin/bash
+  register: ts_detection
+  changed_when: false
+
+- name: Tailscale — paramètres
+  ansible.builtin.set_fact:
+    ts_debian: "{{ (ts_detection.stdout | from_json).debian }}"
+    ts_routes: "{{ tailscale_routes | default((ts_detection.stdout | from_json).reseau, true) }}"
+
+- name: Tailscale — vérifier les paramètres détectés
+  ansible.builtin.assert:
+    that:
+      - ts_debian | length > 0
+      - ts_routes | length > 0
+    fail_msg: >-
+      Détection incomplète (Debian « {{ ts_debian }} », réseau « {{ ts_routes }} » sur {{ vm_bridge }}).
+      Renseigne tailscale_routes dans config.yml, par ex. "192.168.2.0/24".
+    quiet: true
+
+- name: Tailscale — clé du dépôt officiel
+  ansible.builtin.get_url:
+    url: https://pkgs.tailscale.com/stable/debian/{{ ts_debian }}.noarmor.gpg
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
+
+- name: Tailscale — dépôt officiel
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: "0644"
+    content: |
+      deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian {{ ts_debian }} main
+
+- name: Tailscale — déjà installé ?
+  ansible.builtin.command: dpkg-query -W -f=${Status} tailscale
+  register: ts_paquet
+  changed_when: false
+  failed_when: false
+
+- name: Tailscale — installation
+  when: "'install ok installed' not in ts_paquet.stdout"
+  block:
+    # Seulement le dépôt Tailscale : sans abonnement Proxmox, le dépôt « enterprise » fait
+    # échouer un « apt update » complet (erreur 401).
+    - name: Tailscale — liste des paquets du dépôt Tailscale  # noqa: command-instead-of-module (un seul dépôt)
+      ansible.builtin.command: >-
+        apt-get update
+        -o Dir::Etc::sourcelist=sources.list.d/tailscale.list
+        -o Dir::Etc::sourceparts=-
+        -o APT::Get::List-Cleanup=0
+      changed_when: false
+
+    - name: Tailscale — paquet
+      ansible.builtin.apt:
+        name: tailscale
+        state: present
+
+- name: Tailscale — service démarré au boot
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    state: started
+
+# IPv4 seulement : activer le routage IPv6 couperait l'IPv6 automatique (SLAAC) de l'hôte.
+- name: Tailscale — routage vers le réseau de la maison
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-tailscale.conf
+    mode: "0644"
+    content: |
+      # mc-homelab : l'hôte relaie le réseau Tailscale vers le réseau de la maison.
+      net.ipv4.ip_forward = 1
+  register: ts_sysctl
+
+- name: Tailscale — appliquer le routage
+  ansible.builtin.command: sysctl -p /etc/sysctl.d/99-tailscale.conf
+  when: ts_sysctl.changed
+  changed_when: true
+
+- name: Tailscale — état de la connexion
+  ansible.builtin.command: tailscale status --json
+  register: ts_etat
+  changed_when: false
+  failed_when: false
+
+- name: Tailscale — connecté ?
+  ansible.builtin.set_fact:
+    ts_connecte: >-
+      {{ ((ts_etat.stdout if ts_etat.stdout.startswith('{') else '{}') | from_json).BackendState
+         | default('') == 'Running' }}
+
+# --accept-dns=false : Proxmox gère lui-même /etc/resolv.conf, Tailscale ne doit pas y toucher.
+- name: Tailscale — routes annoncées (déjà connecté)
+  ansible.builtin.command: tailscale set --advertise-routes={{ ts_routes }} --accept-dns=false
+  when: ts_connecte | bool
+  changed_when: false
+
+- name: Tailscale — connexion avec la clé de secrets.yml
+  ansible.builtin.command: >-
+    tailscale up --auth-key={{ tailscale_authkey }}
+    --advertise-routes={{ ts_routes }} --accept-dns=false
+  when:
+    - not (ts_connecte | bool)
+    - tailscale_authkey | length > 0
+  register: ts_connexion
+  changed_when: true
+  no_log: true
+
+- name: Tailscale — adresse de l'hôte sur le réseau Tailscale
+  ansible.builtin.command: tailscale ip -4
+  register: ts_ip
+  changed_when: false
+  failed_when: false
+
+- name: Tailscale — résumé
+  ansible.builtin.debug:
+    msg: >-
+      {% if (ts_connecte | bool) or (ts_connexion is changed) %}
+      Tailscale : hôte connecté ({{ ts_ip.stdout | default('?', true) }}). Une seule fois, sur
+      https://login.tailscale.com/admin/machines, menu « … » de cette machine :
+      « Edit route settings » → coche {{ ts_routes }}, puis « Disable key expiry ».
+      {% else %}
+      Tailscale installé mais pas connecté : lance ./outils.sh tailscale et ouvre le lien affiché
+      (ou mets une clé tailscale_authkey dans secrets.yml et relance ./deploy.sh --tags tailscale).
+      {% endif %}

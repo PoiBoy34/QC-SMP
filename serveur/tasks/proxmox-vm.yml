@@ -172,9 +172,16 @@
         state: "{{ 'restarted' if unite_cpu.changed else 'started' }}"
         daemon_reload: true
 
+- name: Lire la configuration de la VM (adresse MAC)
+  ansible.builtin.command: qm config {{ vm_id }}
+  register: config_vm
+  changed_when: false
+
 - name: Résumé VM
   ansible.builtin.debug:
     msg: >-
       VM {{ vm_id }} « {{ vm_name }} » : {{ vm_cores_eff }} cœurs, {{ vm_memory_mb }} Mo,
       disque {{ vm_disk_gb }} Go sur {{ stockage }}, IP {{ vm_ip }}/{{ vm_cidr_eff }}
-      via {{ vm_gateway_eff }}.
+      via {{ vm_gateway_eff }}. Adresse MAC
+      {{ (config_vm.stdout | regex_findall('virtio=([0-9A-Fa-f:]{17})') + ['?']) | first }} :
+      réserve {{ vm_ip }} pour elle dans le modem.
