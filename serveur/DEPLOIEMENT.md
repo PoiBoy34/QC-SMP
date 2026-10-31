@@ -120,11 +120,18 @@ pas aux joueurs.
 De partout, tu as alors l'interface Proxmox (https://192.168.2.133:8006), `ssh mc`,
 `./outils.sh` et `./deploy.sh`, comme à la maison.
 
+## 5 bis. Discord (facultatif)
+
+Pour relier le tchat du jeu à un salon Discord : crée le bot et remplis `discord_token`
+(secrets.yml) et `discord_salon` (config.yml) en suivant la section « Discord » du
+[README](README.md), puis `./deploy.sh --tags serveur`.
+
 ## 6. Connecter le compte Xbox du serveur (consoles)
 
-Crée d'abord le compte sur https://www.xbox.com : un compte **adulte** (un compte enfant
-a des restrictions qui bloquent les amis et le multijoueur), avec un gamertag qui
-ressemble au serveur.
+Crée d'abord un compte **dédié** sur https://www.xbox.com, jamais le tien : le serveur
+accepte automatiquement tous ceux qui l'ajoutent en ami et reste « en ligne » en permanence.
+Un compte **adulte** (un compte enfant a des restrictions qui bloquent les amis et le
+multijoueur), avec un gamertag qui ressemble au serveur (par ex. « LQDM Serveur »).
 
 ```bash
 ./outils.sh xbox

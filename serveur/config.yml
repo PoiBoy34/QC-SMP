@@ -60,8 +60,17 @@ fuseau: "America/Toronto"
 geyser_transport: "both"
 
 # Diffusion du serveur dans l'onglet Amis des consoles (MCXboxBroadcast, la méthode du guide).
-# Utilise un compte Xbox DÉDIÉ, jamais le tien.
+# Utilise un compte Xbox DÉDIÉ, jamais le tien : il accepte tout le monde en ami.
 xbox_broadcast: true
+# true : le compte du serveur retire de ses amis ceux qui ne sont pas venus depuis 15 jours
+# (TOUS ses amis, pas seulement les joueurs). Utile seulement s'il approche des 1000 amis.
+xbox_retirer_amis_inactifs: false
+
+# --- Discord : tchat du jeu relié à un salon Discord ---------------------
+# Les messages du jeu (Java et consoles) arrivent dans le salon, et ceux du salon s'affichent
+# en jeu. Jeton du bot dans secrets.yml (discord_token). Vide = pas de pont.
+# ID du salon : Discord → Paramètres → Avancés → Mode développeur, puis clic droit sur le salon.
+discord_salon: ""
 
 # Liste blanche. true : seuls les joueurs ajoutés avec ./outils.sh whitelist entrent.
 # false : ouvert à tous ceux qui ont l'adresse (ou qui ajoutent le compte Xbox du serveur).

@@ -293,6 +293,45 @@
     - "{{ playbook_dir }}/../contenu/generes/geyser/*.json"
   notify: redemarrer proxy
 
+# --- Discord : tchat du jeu relié à un salon (VelocityDiscord, sur le proxy) -------
+- name: Discord — plugin du pont (VelocityDiscord, version vérifiée)
+  ansible.builtin.get_url:
+    url: "{{ url_velocitydiscord }}"
+    dest: "{{ base }}/proxy/plugins/VelocityDiscord.jar"
+    checksum: "sha256:{{ sha256_velocitydiscord }}"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0644"
+  when: discord_actif | bool
+  notify: redemarrer proxy
+
+- name: Discord — dossier de config du pont
+  ansible.builtin.file:
+    path: "{{ base }}/proxy/plugins/discord"
+    state: directory
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0750"
+  when: discord_actif | bool
+
+- name: Discord — config du pont en français (jeton, salon, messages)
+  ansible.builtin.template:
+    src: discord-config.toml.j2
+    dest: "{{ base }}/proxy/plugins/discord/config.toml"
+    owner: "{{ uid_mc }}"
+    group: "{{ uid_mc }}"
+    mode: "0600"
+  when: discord_actif | bool
+  no_log: true          # contient le jeton du bot
+  notify: redemarrer proxy
+
+- name: Discord — retirer le pont s'il n'est plus configuré
+  ansible.builtin.file:
+    path: "{{ base }}/proxy/plugins/VelocityDiscord.jar"
+    state: absent
+  when: not (discord_actif | bool)
+  notify: redemarrer proxy
+
 - name: MCXboxBroadcast — extension Geyser (onglet Amis des consoles)
   ansible.builtin.get_url:
     url: "{{ url_mcxboxbroadcast }}"
@@ -407,6 +446,15 @@
         replace: '\g<1> {{ domaine if https_actif | bool else "auto" }}'
       notify: redemarrer proxy
 
+    # Par défaut, MCXboxBroadcast retire de ses amis TOUS ceux qui ne rejoignent pas le serveur
+    # pendant 15 jours : désactivé, sauf si xbox_retirer_amis_inactifs est à true.
+    - name: MCXboxBroadcast — retirer ou non les amis inactifs
+      ansible.builtin.replace:
+        path: "{{ base }}/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/config.yml"
+        regexp: '(expiry:\n(?:[ \t]*#.*\n)*[ \t]*enabled:)[ \t]*(true|false)'
+        replace: '\g<1> {{ xbox_retirer_amis_inactifs | bool | lower }}'
+      notify: redemarrer proxy
+
 # --- Sauvegardes et surveillance ------------------------------------------------
 - name: Scripts de maintenance
   ansible.builtin.template:
@@ -503,6 +551,7 @@
       - "HTTPS NetherNet : {{ 'actif (' ~ domaine ~ ')' if https_actif | bool else 'NON (les consoles verront « faire confiance ? »)' }}"
       - "Transport Geyser : {{ geyser_transport }}   Adresses NetherNet annoncées : {{ ip_publique.stdout }}, {{ vm_ip }}"
       - "Liste blanche : {{ 'active (./outils.sh whitelist <pseudo>)' if liste_blanche | bool else 'désactivée, le serveur est ouvert à tous' }}"
+      - "Discord : {{ 'tchat relié au salon ' ~ discord_salon if discord_actif | bool else 'pas de pont (discord_token et discord_salon vides)' }}"
       - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
       - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"
       - "{{ ('Compte Xbox : ouvre https://www.microsoft.com/link, entre le code ' ~ code_xbox.stdout ~ ' et connecte le compte Xbox DÉDIÉ') if (code_xbox.stdout | default('') | length > 0) else 'Compte Xbox : aucun code en attente (déjà connecté ou désactivé), voir ./outils.sh xbox' }}"

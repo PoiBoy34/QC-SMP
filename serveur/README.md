@@ -189,6 +189,30 @@ jamais.
 - Depuis un tailnet, la VM voit les connexions arriver de l'IP de l'hôte (Tailscale les traduit) :
   le pare-feu de la VM, qui accepte SSH depuis le réseau local et l'hôte, n'a rien à changer.
 
+## Discord : tchat relié au jeu
+
+Le plugin [VelocityDiscord](https://github.com/fooooooooooooooo/VelocityDiscord), sur le proxy,
+relie le tchat de **tous** les serveurs (Java et consoles) à un salon Discord, dans les deux
+sens. Les arrivées et départs s'affichent aussi, en français, et la commande `/list` de Discord
+dit qui est en ligne. Il s'installe dès que `discord_token` (secrets.yml) et `discord_salon`
+(config.yml) sont remplis.
+
+1. https://discord.com/developers/applications → **New Application** (par ex. « LQDM »).
+2. Onglet **Bot** : **Reset Token**, copie le jeton dans `discord_token` de `secrets.yml`.
+   Plus bas, active **Server Members Intent** et **Message Content Intent**.
+3. Onglet **OAuth2 → URL Generator** : coche `bot` et `applications.commands`, puis les
+   permissions *View Channels*, *Send Messages*, *Embed Links* et *Read Message History*.
+   Ouvre le lien généré et ajoute le bot au serveur Discord LQDM. Il faut le droit
+   « Gérer le serveur » sur ce Discord : sinon, demande à CampFire012.
+4. Crée un salon (par ex. `#tchat-minecraft`). Dans Discord : Paramètres → Avancés → **Mode
+   développeur**, puis clic droit sur le salon → **Copier l'identifiant** → `discord_salon`
+   dans `config.yml`.
+5. `./deploy.sh --tags serveur`.
+
+Le tchat en jeu reste séparé par serveur (spawn, SMP, mini-jeux) : seul le salon Discord voit
+tout. Pour gérer la liste blanche depuis Discord, il faudra un petit bot de plus : à faire le
+jour où la liste blanche sera activée.
+
 ## Compte Xbox du serveur (onglet Amis des consoles)
 
 Crée un compte Microsoft **dédié** (jamais le tien : il peut être signalé). Au premier démarrage,

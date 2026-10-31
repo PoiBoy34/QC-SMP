@@ -5,6 +5,10 @@ cloudflare_api_token: ""     # défini dans secrets.yml
 tailscale_authkey: ""        # défini dans secrets.yml (facultatif)
 tailscale: false
 liste_blanche: true
+xbox_retirer_amis_inactifs: false
+discord_token: ""            # défini dans secrets.yml (facultatif)
+discord_salon: ""
+discord_actif: "{{ (discord_token | length > 0) and (discord_salon | string | length > 0) }}"
 uid_mc: 1000                 # uid utilisé par les images itzg (= premier utilisateur de la VM)
 
 debian_image_url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2
@@ -23,6 +27,10 @@ url_geyser_velocity: https://download.geysermc.org/v2/projects/geyser/versions/l
 url_floodgate_velocity: https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/velocity
 url_floodgate_paper: https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot
 url_mcxboxbroadcast: https://github.com/MCXboxBroadcast/Broadcaster/releases/latest/download/MCXboxBroadcastExtension.jar
+
+# Pont Discord (tchat du jeu ↔ salon Discord) : version figée, sa config est traduite pour elle
+url_velocitydiscord: https://github.com/fooooooooooooooo/VelocityDiscord/releases/download/2.0.0/VelocityDiscord-2.0.0.jar
+sha256_velocitydiscord: e6a376550042d7454f6b710e0a8429844ec91b9d95f126889b2014689cf8c919
 
 # Textures des items custom (contenu/), proposées aux joueurs Java qui n'ont pas le launcher.
 # Vide = désactivé.
