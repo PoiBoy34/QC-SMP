@@ -21,8 +21,15 @@
   // --- État du serveur -----------------------------------------------------------------
   const etats = $$('[data-etat]');
   if (etats.length && R.adresse) {
-    fetch('https://api.mcsrvstat.us/3/' + R.adresse)
-      .then((r) => r.json())
+    // Deux services : si l'un a un vieux résultat en cache (ou est en panne), l'autre corrige.
+    const sonder = (url) => fetch(url).then((r) => r.json())
+      .then((d) => ({ online: Boolean(d.online), players: d.players }))
+      .catch(() => ({ online: false }));
+    Promise.all([
+      sonder('https://api.mcstatus.io/v2/status/java/' + R.adresse),
+      sonder('https://api.mcsrvstat.us/3/' + R.adresse),
+    ])
+      .then((reponses) => reponses.find((x) => x.online) || reponses[0])
       .then((s) => {
         const n = s.players ? s.players.online : 0;
         const texte = s.online
