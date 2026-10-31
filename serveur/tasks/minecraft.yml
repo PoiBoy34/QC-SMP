@@ -537,9 +537,12 @@
   changed_when: false
   failed_when: false
 
-- name: Code de connexion Xbox (MCXboxBroadcast, à faire une seule fois)
-  ansible.builtin.shell: docker logs mc-proxy 2>&1 | grep -o 'enter the code [A-Z0-9]*' | tail -n 1 | awk '{print $4}'
-  register: code_xbox
+# Dernier événement du journal : un code à entrer, ou le compte déjà connecté
+- name: Compte Xbox du serveur (MCXboxBroadcast)
+  ansible.builtin.shell: >-
+    docker logs mc-proxy 2>&1
+    | grep -o -E 'enter the code [A-Z0-9]+|Successfully authenticated as [^(]+' | tail -n 1
+  register: etat_xbox
   changed_when: false
   failed_when: false
   when: xbox_broadcast | bool
@@ -554,4 +557,12 @@
       - "Discord : {{ 'tchat relié au salon ' ~ discord_salon if discord_actif | bool else 'pas de pont (discord_token et discord_salon vides)' }}"
       - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
       - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"
-      - "{{ ('Compte Xbox : ouvre https://www.microsoft.com/link, entre le code ' ~ code_xbox.stdout ~ ' et connecte le compte Xbox DÉDIÉ') if (code_xbox.stdout | default('') | length > 0) else 'Compte Xbox : aucun code en attente (déjà connecté ou désactivé), voir ./outils.sh xbox' }}"
+      - >-
+        {%- set x = etat_xbox.stdout | default('') -%}
+        {%- if x.startswith('enter the code') -%}
+        Compte Xbox : dans une fenêtre privée, ouvre https://www.microsoft.com/link, entre le code {{ x.split()[-1] }} et connecte le compte Xbox DÉDIÉ
+        {%- elif x.startswith('Successfully authenticated as') -%}
+        Compte Xbox du serveur connecté : {{ x[30:] | trim }} (pour changer : ./outils.sh xbox nouveau)
+        {%- else -%}
+        Compte Xbox : rien dans le journal (désactivé, ou voir ./outils.sh xbox)
+        {%- endif -%}

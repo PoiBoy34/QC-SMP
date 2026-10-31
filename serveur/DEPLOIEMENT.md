@@ -137,7 +137,10 @@ multijoueur), avec un gamertag qui ressemble au serveur (par ex. « LQDM Serveur
 ./outils.sh xbox
 ```
 
-Ouvre https://www.microsoft.com/link, entre le code et connecte-toi avec le **compte dédié**.
+Dans une fenêtre de navigation **privée** (pour ne pas utiliser ton compte perso déjà connecté),
+ouvre https://www.microsoft.com/link, entre le code et connecte-toi avec le **compte dédié**.
+Code expiré, ou mauvais compte connecté ? `./outils.sh xbox nouveau` déconnecte le compte
+actuel et donne un nouveau code.
 Mets ensuite son gamertag dans `gamertag: ""` de `docs/_config.yml` (le site l'affichera aux
 joueurs console).
 

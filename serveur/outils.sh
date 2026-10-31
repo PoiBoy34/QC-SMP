@@ -24,6 +24,8 @@ Usage : ./outils.sh <commande>
   donner <joueur> <item> [n]  donne un item custom de contenu/items (ex. poutine)
   nethernet                état NetherNet de Geyser (adresses annoncées, signalisation)
   xbox                     dernier code de connexion du compte Xbox (MCXboxBroadcast)
+  xbox nouveau             déconnecte le compte Xbox du serveur et donne un nouveau code
+                           (pour changer de compte, ou si le code a expiré)
   redemarrer [serveur]     redémarre un serveur, ou tout le réseau sans argument
   maj                      met à jour images, Paper, Geyser et plugins (redémarre tout)
   sauvegarde               lance une sauvegarde maintenant
@@ -72,12 +74,31 @@ print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "
     vm "docker logs mc-proxy 2>&1 | grep -a 'Built-in signaling' | tail -n 1"
     cmd proxy "geyser nethernet advertised" ;;
   xbox)
-    code=$(vm "docker logs mc-proxy 2>&1 | grep -o 'enter the code [A-Z0-9]*' | tail -n 1 | awk '{print \$4}'")
-    if [[ -n $code ]]; then
-      echo "Ouvre https://www.microsoft.com/link, entre le code $code et connecte le compte Xbox DÉDIÉ au serveur."
-    else
-      echo "Aucun code dans le journal : le compte est déjà connecté (ou xbox_broadcast est désactivé)."
-    fi ;;
+    depuis=""
+    if [[ ${2:-} == nouveau ]]; then
+      info "Déconnexion du compte Xbox du serveur, puis redémarrage du proxy (les joueurs sont déconnectés)"
+      depuis=$(vm "date -u +%Y-%m-%dT%H:%M:%SZ")
+      vm "sudo rm -f /opt/minecraft/proxy/plugins/Geyser-Velocity/extensions/mcxboxbroadcast/cache.json"
+      compose restart proxy
+      info "Attente du nouveau code (jusqu'à 3 minutes)…"
+    fi
+    # Dernier événement du journal : un code à entrer, ou le compte connecté
+    for _ in $(seq 36); do
+      etat=$(vm "docker logs ${depuis:+--since $depuis} mc-proxy 2>&1 | grep -o -E 'enter the code [A-Z0-9]+|Successfully authenticated as [^(]+' | tail -n 1")
+      [[ -n $etat || -z $depuis ]] && break
+      sleep 5
+    done
+    case "$etat" in
+      "enter the code "*)
+        echo "Dans une fenêtre de navigation PRIVÉE, ouvre https://www.microsoft.com/link, entre le code ${etat##* }"
+        echo "et connecte-toi avec le compte Xbox DÉDIÉ au serveur (pas le tien)."
+        echo "Code expiré ? ./outils.sh xbox nouveau" ;;
+      "Successfully authenticated as "*)
+        ok "compte Xbox du serveur connecté : ${etat#Successfully authenticated as }"
+        echo "     Pour changer de compte : ./outils.sh xbox nouveau" ;;
+      *)
+        echo "Rien dans le journal du proxy (xbox_broadcast désactivé, ou proxy en train de démarrer)." ;;
+    esac ;;
   redemarrer)
     if [[ -n ${2:-} ]]; then compose restart "$2"; else compose restart; fi ;;
   maj)
