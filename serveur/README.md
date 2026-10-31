@@ -230,6 +230,7 @@ serveur accepte ensuite automatiquement les demandes d'ami.
 ```bash
 ./outils.sh                          # aide
 ./outils.sh etat                     # conteneurs, CPU, RAM
+./outils.sh verifier                 # le serveur vu d'Internet : DNS, Java, Bedrock (comme le site)
 ./outils.sh whitelist JosephMC       # joueur Java
 ./outils.sh whitelist .Gamertag      # joueur Bedrock (avec le point de Floodgate)
 ./outils.sh console smp              # console (« exit » pour sortir, le serveur continue)

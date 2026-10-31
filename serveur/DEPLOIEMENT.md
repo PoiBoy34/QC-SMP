@@ -179,6 +179,7 @@ Quand les tests console passent, publie le guide joueurs (le site l'affiche déj
 | Besoin | Commande |
 | --- | --- |
 | Voir l'état | `./outils.sh etat` |
+| Le serveur vu d'Internet (comme le site) | `./outils.sh verifier` |
 | Console d'un serveur | `./outils.sh console smp` |
 | Journal en direct | `./outils.sh logs proxy` |
 | Instantané avant un tournage | `./outils.sh snapshot` |

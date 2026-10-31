@@ -23,6 +23,7 @@ Usage : ./outils.sh <commande>
                            Java : JosephMC     Bedrock : .Gamertag (avec le point de Floodgate)
   donner <joueur> <item> [n]  donne un item custom de contenu/items (ex. poutine)
   nethernet                état NetherNet de Geyser (adresses annoncées, signalisation)
+  verifier                 le serveur vu d'Internet (comme le site) : DNS, Java, Bedrock
   xbox                     dernier code de connexion du compte Xbox (MCXboxBroadcast)
   xbox nouveau             déconnecte le compte Xbox du serveur et donne un nouveau code
                            (pour changer de compte, ou si le code a expiré)
@@ -69,6 +70,33 @@ print(items[sys.argv[2]]["commande"])' "$RACINE/../contenu/generes/items.json" "
     # Le joueur n'est que sur un serveur : on tente partout, un seul répondra « Gave ».
     for s in $(paper); do cmd "$s" "$commande" | grep -i "gave\|donné" && exit 0; done
     erreur "$joueur n'est connecté sur aucun serveur Paper" ;;
+  verifier)
+    # Même source que l'état affiché sur le site : mcsrvstat.us teste depuis Internet.
+    domaine="$(valeur domaine)"; domaine="${domaine:-$VM_IP}"
+    ip_maison=$(vm "curl -4 -fsS --max-time 10 https://api.ipify.org" || true)
+    ip_dns=$(python3 -c 'import socket, sys; print(socket.gethostbyname(sys.argv[1]))' "$domaine" 2>/dev/null || true)
+    echo "IP publique de la maison : ${ip_maison:-?}"
+    echo "DNS de $domaine : ${ip_dns:-introuvable}"
+    if [[ -n $ip_maison && $ip_dns != "$ip_maison" ]]; then
+      avert "le DNS ne pointe pas sur la maison : vérifie l'enregistrement A dans Cloudflare (ou ./outils.sh logs ddns)"
+    fi
+    for edition in java bedrock; do
+      chemin=$([[ $edition == java ]] && echo "3" || echo "bedrock/3")
+      curl -fsS --max-time 20 -A "lqdm-outils" "https://api.mcsrvstat.us/$chemin/$domaine" | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+debug = d.get("debug", {})
+ligne = sys.argv[1].ljust(8) + " : " + ("EN LIGNE" if d.get("online") else "HORS LIGNE")
+ligne += " (" + str(d.get("ip", "?")) + ":" + str(d.get("port", "?")) + ")"
+if debug.get("cachehit"):
+    ligne += " [résultat en cache]"
+if debug.get("error"):
+    ligne += " : " + json.dumps(debug["error"], ensure_ascii=False)
+print(ligne)' "$edition" \
+        || echo "$edition : mcsrvstat.us ne répond pas"
+    done
+    echo "Hors ligne alors que ./outils.sh etat est bon ? Ce sont les redirections de ports du modem."
+    echo "Un résultat « en cache » peut dater de quelques minutes : relance dans 5 min." ;;
   nethernet)
     # Démarrage de la signalisation (http ou https) puis adresses annoncées aux joueurs
     vm "docker logs mc-proxy 2>&1 | grep -a 'Built-in signaling' | tail -n 1"

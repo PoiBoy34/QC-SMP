@@ -41,7 +41,7 @@ lqdm:
   depot: PoiBoy34/QC-SMP
   adresse: mc.qcsmp.mekhorizon.org
   port_bedrock: "19132"
-  gamertag: ""                  # gamertag du compte Xbox du serveur (onglet Amis des consoles)
+  gamertag: "MCQuebecSRV"       # gamertag du compte Xbox du serveur (onglet Amis des consoles)
   discord: https://discord.gg/EQyXcrG2hA
   contact: poiboy34             # pseudo Discord à contacter pour l'aide et le recrutement
   createur_discord: CampFire012
