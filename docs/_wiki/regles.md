@@ -27,7 +27,7 @@ Tu trouves un bug ? Signale-le au lieu de t'en servir.
 ## 4. Les admins ont le dernier mot
 
 En cas de désaccord, c'est l'équipe qui tranche. Elle peut donner un avertissement, ou retirer
-quelqu'un de la liste blanche si ça se répète.
+quelqu'un {% if site.lqdm.liste_blanche %}de la liste blanche{% else %}du serveur{% endif %} si ça se répète.
 
 ---
 

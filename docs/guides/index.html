@@ -1,0 +1,29 @@
+---
+title: Guides
+description: "Les guides de LQDM : bien commencer, se connecter, jouer ensemble, protéger tes constructions."
+---
+<section class="titre-page">
+  <div class="section-in">
+    <div>
+      <h1>Les guides</h1>
+      <p>Tout pour bien jouer sur LQDM, expliqué étape par étape.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-serree">
+  <div class="section-in">
+    {%- for groupe in site.data.guides %}
+    <div class="groupe-guides">
+      <h2>{{ groupe.titre }}</h2>
+      <div class="grille-guides">
+        {%- for g in groupe.guides %}
+        {% include carte-guide.html guide=g %}
+        {%- endfor %}
+      </div>
+    </div>
+    {%- endfor %}
+    <p class="note" style="margin-top: 36px">Tu ne trouves pas ta réponse ? Cherche dans le
+      <a href="{{ '/wiki/' | relative_url }}">wiki</a> ou demande au <a href="{{ '/support/' | relative_url }}">support</a>.</p>
+  </div>
+</section>

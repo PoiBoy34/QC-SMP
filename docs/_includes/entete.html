@@ -11,6 +11,7 @@
     <nav class="navigation" id="navigation" aria-label="Navigation principale">
       <ul class="liens">
         <li><a href="{{ '/nouvelles/' | relative_url }}"{% if u contains '/nouvelles/' %} aria-current="page"{% endif %}>Nouvelles</a></li>
+        <li><a href="{{ '/guides/' | relative_url }}"{% if u contains '/guides/' %} aria-current="page"{% endif %}>Guides</a></li>
         <li><a href="{{ '/wiki/' | relative_url }}"{% if u contains '/wiki/' %} aria-current="page"{% endif %}>Wiki</a></li>
         <li><a href="{{ '/support/' | relative_url }}"{% if u contains '/support/' %} aria-current="page"{% endif %}>Support</a></li>
         {%- if site.lqdm.votes.size > 0 %}

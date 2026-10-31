@@ -29,9 +29,11 @@ peut rejoindre.
   et les **amis** dans Microsoft Family Safety, ou dans les paramètres de confidentialité de la
   Xbox. Sans ça, le serveur reste invisible.
 
+{% if site.lqdm.liste_blanche %}
 ## 5. Tu es sur la liste blanche
 
-Avec ton **gamertag** exact : voir [Être ajouté à la liste blanche](/wiki/liste-blanche/).
+Avec ton **gamertag** exact : voir [Le serveur est-il ouvert à tous ?](/wiki/liste-blanche/).
+{% endif %}
 
 ## Toujours rien ?
 

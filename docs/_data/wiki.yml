@@ -1,5 +1,10 @@
 # Catégories du wiki, dans l'ordre d'affichage. Chaque article de _wiki/ indique la sienne
 # avec « categorie: » (le nom exact d'ici).
+- nom: Guides
+  couleur: "#0891b2"
+  icone: /assets/img/guides/premiers-pas.png
+  description: Bien démarrer, jouer avec tes amis, protéger tes constructions.
+
 - nom: Pour commencer
   couleur: "#2f7bff"
   icone: /assets/img/wiki/commencer.png

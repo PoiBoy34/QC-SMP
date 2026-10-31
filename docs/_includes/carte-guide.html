@@ -1,0 +1,9 @@
+{%- assign g = include.guide -%}
+<a class="carte-guide" href="{{ g.lien | relative_url }}">
+  {%- if g.icone == "discord" %}
+  <span class="carte-guide-icone discord">{% include icone.html nom="discord" %}</span>
+  {%- else %}
+  <img class="carte-guide-icone" src="{{ g.icone | relative_url }}" alt="" width="64" height="64" loading="lazy">
+  {%- endif %}
+  <span class="carte-guide-texte"><strong>{{ g.titre }}</strong><span>{{ g.texte }}</span></span>
+</a>

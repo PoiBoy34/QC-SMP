@@ -28,7 +28,7 @@ classe: accueil
   <div class="section-in">
     <p class="surtitre">Le serveur</p>
     <h2>Tout un monde, entre Québécois</h2>
-    <p class="intro">Un réseau privé sur liste blanche, pensé pour jouer entre amis.</p>
+    <p class="intro">{% if site.lqdm.liste_blanche %}Un réseau privé sur liste blanche, pensé pour jouer entre amis.{% else %}Ouvert à tous, pensé pour jouer entre amis.{% endif %}</p>
     <div class="grille-atouts">
       <article class="atout">
         <img src="{{ '/assets/img/wiki/commencer.png' | relative_url }}" alt="" width="72" height="72" loading="lazy">
@@ -55,6 +55,23 @@ classe: accueil
 </section>
 
 <section class="section">
+  <div class="section-in">
+    <div class="titre-ligne">
+      <div>
+        <p class="surtitre">Nouveau sur LQDM ?</p>
+        <h2>Bien commencer</h2>
+      </div>
+      <a class="lien-fleche" href="{{ '/guides/' | relative_url }}">Tous les guides {% include icone.html nom="droite" %}</a>
+    </div>
+    <div class="grille-guides">
+      {%- for g in site.data.guides.first.guides %}
+      {% include carte-guide.html guide=g %}
+      {%- endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
   <div class="section-in">
     <div class="titre-ligne">
       <div>

@@ -132,12 +132,20 @@ description: Télécharge le launcher LQDM et viens jouer, sur PC, console ou t�
 <section class="section section-serree">
   <div class="section-in faq">
     <h2>Questions</h2>
+    {%- if site.lqdm.liste_blanche %}
     <details>
       <summary>Le serveur me dit que je ne suis pas sur la liste blanche</summary>
       <p>Le serveur est privé. Demande à être ajouté dans le salon #support du
         <a href="{{ site.lqdm.discord }}" target="_blank" rel="noopener">Discord</a> ou à {{ site.lqdm.contact }},
         en donnant ton pseudo (ton gamertag si tu joues sur console, téléphone ou tablette).</p>
     </details>
+    {%- else %}
+    <details>
+      <summary>Est-ce que je dois m'inscrire ?</summary>
+      <p>Non : pour l'instant, le serveur est ouvert à tous. Connecte-toi et lis le guide
+        <a href="{{ '/wiki/premiers-pas/' | relative_url }}">Premiers pas sur LQDM</a>.</p>
+    </details>
+    {%- endif %}
     <details>
       <summary>Est-ce que le launcher est gratuit ? Est-ce un virus ?</summary>
       <p>Il est gratuit et ce n'est pas un virus : son code est public sur

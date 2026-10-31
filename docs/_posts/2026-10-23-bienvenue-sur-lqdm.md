@@ -19,9 +19,12 @@ console ou sur téléphone, on joue ensemble dans le même monde.
 
 ## Comment nous rejoindre
 
-1. Le serveur est privé : demande à être ajouté à la **liste blanche** dans le salon #support du
+{% if site.lqdm.liste_blanche %}1. Le serveur est privé : demande à être ajouté à la **liste blanche** dans le salon #support du
    [Discord]({{ site.lqdm.discord }}), avec ton pseudo (ou ton gamertag sur console et téléphone).
-2. Suis les étapes de la page [Jouer](/jouer/) : le launcher sur PC, l'onglet Amis sur console,
+2. Suis les étapes{% else %}Le serveur est **ouvert à tous** : pas besoin de t'inscrire.
+
+1. Lis le guide [Premiers pas sur LQDM](/wiki/premiers-pas/).
+2. Suis les étapes{% endif %} de la page [Jouer](/jouer/) : le launcher sur PC, l'onglet Amis sur console,
    l'adresse du serveur sur téléphone.
 
 ## On se retrouve sur Discord

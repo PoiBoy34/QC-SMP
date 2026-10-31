@@ -47,6 +47,12 @@ lqdm:
   createur_discord: CampFire012
   createur_discord_lien: https://discord.gg/pcQqDzTq2B
   recrutement_ouvert: true
+  # Liste blanche : la même valeur que liste_blanche dans serveur/config.yml. Les pages
+  # s'adaptent toutes seules (serveur ouvert à tous, ou sur demande).
+  liste_blanche: false
+  # Salon Discord relié au tchat du jeu (pont Discord), par ex. "#tchat-minecraft".
+  # Vide tant que le pont n'est pas en place.
+  salon_tchat: ""
   # Sites de vote : l'onglet « Voter » apparaît dès qu'il y en a un. Exemple :
   #   - { nom: "serveurs-minecraft.org", lien: "https://..." }
   votes: []

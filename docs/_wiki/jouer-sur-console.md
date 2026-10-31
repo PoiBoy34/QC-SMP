@@ -24,4 +24,4 @@ donc par l'onglet **Amis** : le serveur a son propre compte Xbox, et il suffit d
 - Avec un **compte enfant**, un parent doit autoriser le multijoueur, le jeu multiplateforme et
   les amis. Voir [Le serveur n'apparaît pas sur ma console](/wiki/probleme-console/).
 
-Et n'oublie pas : il faut être sur la [liste blanche](/wiki/liste-blanche/) avec ton gamertag.
+{% if site.lqdm.liste_blanche %}Et n'oublie pas : il faut être sur la [liste blanche](/wiki/liste-blanche/) avec ton gamertag.{% endif %}
