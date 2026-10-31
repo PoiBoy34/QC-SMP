@@ -1,23 +1,25 @@
 # Commandes du réseau LQDM, sur tous les serveurs Paper (installé par serveur/deploy.sh).
 # Le contenu des menus est décrit dans contenu/menus.json.
 
+# Le dialog vise le joueur par son NOM : la commande /dialog refuse un UUID (sélecteur « toute entité »).
+# Les noms Bedrock (.Gamertag) passent aussi.
 command /menu:
 	aliases: m
 	description: Ouvre le menu du serveur
 	trigger:
-		execute console command "dialog show %uuid of player% lqdm:menu"
+		execute console command "dialog show %player's name% lqdm:menu"
 
 command /rules:
 	aliases: regles
 	description: Les règles du serveur
 	trigger:
-		execute console command "dialog show %uuid of player% lqdm:regles"
+		execute console command "dialog show %player's name% lqdm:regles"
 
 command /games:
 	aliases: jeux
 	description: Les mini-jeux
 	trigger:
-		execute console command "dialog show %uuid of player% lqdm:jeux"
+		execute console command "dialog show %player's name% lqdm:jeux"
 
 command /smp:
 	aliases: survie
