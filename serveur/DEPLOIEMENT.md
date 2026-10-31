@@ -145,6 +145,10 @@ joueurs console).
 ./outils.sh whitelist .UnGamertag           # ajoute un joueur Bedrock (avec le point)
 ```
 
+La liste blanche ne bloque personne tant que `liste_blanche: false` dans `config.yml` (le
+serveur est ouvert à tous). Les joueurs ajoutés restent enregistrés pour le jour où tu la
+mets à `true` (puis `./deploy.sh --tags serveur`).
+
 ## 8. Tester
 
 - [ ] `./outils.sh etat` : tous les conteneurs sont `running` / `healthy`.

@@ -4,6 +4,7 @@ base: /opt/minecraft
 cloudflare_api_token: ""     # défini dans secrets.yml
 tailscale_authkey: ""        # défini dans secrets.yml (facultatif)
 tailscale: false
+liste_blanche: true
 uid_mc: 1000                 # uid utilisé par les images itzg (= premier utilisateur de la VM)
 
 debian_image_url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-amd64.qcow2

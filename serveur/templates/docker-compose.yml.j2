@@ -106,8 +106,9 @@ services:
       # Velocity authentifie les joueurs et transmet leur identité (forwarding moderne)
       ONLINE_MODE: "FALSE"
       ENFORCE_SECURE_PROFILE: "FALSE"
-      ENABLE_WHITELIST: "TRUE"
-      ENFORCE_WHITELIST: "TRUE"
+      # Liste blanche (liste_blanche dans config.yml) : partagée par tous les serveurs Paper
+      ENABLE_WHITELIST: "{{ 'TRUE' if liste_blanche | bool else 'FALSE' }}"
+      ENFORCE_WHITELIST: "{{ 'TRUE' if liste_blanche | bool else 'FALSE' }}"
 {% if admins_java | length > 0 %}
       OPS: "{{ admins_java | join(',') }}"
 {% endif %}

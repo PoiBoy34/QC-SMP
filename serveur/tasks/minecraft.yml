@@ -502,6 +502,7 @@
       - "Réseau démarré. Java : {{ domaine | default('', true) or vm_ip }}:{{ port_java }}   Bedrock : {{ domaine | default('', true) or vm_ip }}:{{ port_bedrock }}"
       - "HTTPS NetherNet : {{ 'actif (' ~ domaine ~ ')' if https_actif | bool else 'NON (les consoles verront « faire confiance ? »)' }}"
       - "Transport Geyser : {{ geyser_transport }}   Adresses NetherNet annoncées : {{ ip_publique.stdout }}, {{ vm_ip }}"
+      - "Liste blanche : {{ 'active (./outils.sh whitelist <pseudo>)' if liste_blanche | bool else 'désactivée, le serveur est ouvert à tous' }}"
       - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
       - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"
       - "{{ ('Compte Xbox : ouvre https://www.microsoft.com/link, entre le code ' ~ code_xbox.stdout ~ ' et connecte le compte Xbox DÉDIÉ') if (code_xbox.stdout | default('') | length > 0) else 'Compte Xbox : aucun code en attente (déjà connecté ou désactivé), voir ./outils.sh xbox' }}"

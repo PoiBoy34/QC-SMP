@@ -63,6 +63,12 @@ geyser_transport: "both"
 # Utilise un compte Xbox DÉDIÉ, jamais le tien.
 xbox_broadcast: true
 
+# Liste blanche. true : seuls les joueurs ajoutés avec ./outils.sh whitelist entrent.
+# false : ouvert à tous ceux qui ont l'adresse (ou qui ajoutent le compte Xbox du serveur).
+# Les joueurs déjà ajoutés restent enregistrés : repasse à true quand tu veux, puis
+# ./deploy.sh --tags serveur.
+liste_blanche: false
+
 # Pseudos Java qui seront op (et ajoutés à la liste blanche). Ex. ["JosephMC"]
 admins_java: []
 
