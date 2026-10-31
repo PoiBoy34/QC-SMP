@@ -5,10 +5,12 @@ command /spawn:
 	aliases: hub, lobby
 	description: Retour au spawn
 	trigger:
-		teleport player to spawn of world "world"
+		teleport player to lieuSur(spawn of world "world")
 
+# Le lobby est un carrefour : on y arrive toujours au point de spawn, debout sur le sol.
 on join:
 	wait 1 tick
+	teleport player to lieuSur(spawn of world "world")
 	set slot 4 of player's inventory to compass named "&9&lMenu LQDM &7(clic droit)"
 
 on right click:
@@ -21,5 +23,12 @@ on drop:
 	cancel event
 
 on inventory click:
+	event-item is set
 	uncolored name of event-item is "Menu LQDM (clic droit)"
+	cancel event
+
+# Aucun mob ne naît au spawn (ni au hasard, ni avec le terrain). Ceux qu'un admin invoque
+# (/summon, œuf) restent.
+on spawn:
+	spawn reason is natural or chunk generation
 	cancel event

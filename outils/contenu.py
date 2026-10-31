@@ -266,14 +266,21 @@ def js(objet):
     return json.dumps(objet, indent=2, ensure_ascii=False) + '\n'
 
 
-def mcmeta(description, format_):
-    majeur, mineur = format_
+# Plus petit format accepté : 1.21.9, où min_format/max_format sont apparus (données 82,
+# ressources 65). Pas de maximum serré : le serveur Paper (et Java sans le launcher) peut tourner
+# sur une autre version que le launcher ; un pack « incompatible » risque d'être laissé de côté.
+FORMAT_MIN = {'ressources': 65, 'donnees': 82}
+FORMAT_MAX = 999
+
+
+def mcmeta(description, format_, genre):
+    majeur, _ = format_
     return js({'pack': {'description': description, 'pack_format': majeur,
-                        'min_format': [majeur, mineur], 'max_format': [majeur, mineur]}})
+                        'min_format': min(FORMAT_MIN[genre], majeur), 'max_format': FORMAT_MAX}})
 
 
 def pack_java(items, format_, icone):
-    fichiers = {'pack.mcmeta': mcmeta(f'{NOM} : items du serveur', format_)}
+    fichiers = {'pack.mcmeta': mcmeta(f'{NOM} : items du serveur', format_, 'ressources')}
     if icone:
         fichiers['pack.png'] = icone
     for it in items:
@@ -308,7 +315,7 @@ def pack_bedrock(items, version, icone):
 
 
 def datapack_menus(menus, format_):
-    fichiers = {'pack.mcmeta': mcmeta(f'{NOM} : menus du serveur', format_)}
+    fichiers = {'pack.mcmeta': mcmeta(f'{NOM} : menus du serveur', format_, 'donnees')}
     for nom, m in menus.items():
         fichiers[f'data/{NS}/dialog/{nom}.json'] = js(dialog(nom, m))
     # Le menu « menu » devient le bouton du menu Échap (Java) et l'action rapide (touche dédiée).

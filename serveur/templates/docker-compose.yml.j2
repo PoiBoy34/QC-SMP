@@ -128,13 +128,16 @@ services:
       LUCKPERMS_DATA_PASSWORD: ${LP_DB_PASSWORD}
       LUCKPERMS_MESSAGING_SERVICE: sql
 {% if s.type == 'spawn' %}
-      # Carrefour : pas de dégâts de mobs, pas de faim, pas de casse (aventure)
+      # Carrefour : aucun mob, pas de faim, pas de casse (aventure). Le spawn naturel des
+      # mobs est aussi coupé par règle de jeu (tâche « Mobs » de minecraft.yml).
       MODE: adventure
       DIFFICULTY: peaceful
       PVP: "false"
       LEVEL_TYPE: FLAT
       GENERATE_STRUCTURES: "false"
       SPAWN_MONSTERS: "false"
+      SPAWN_ANIMALS: "false"
+      SPAWN_NPCS: "false"
       SPAWN_PROTECTION: "0"
       VIEW_DISTANCE: "8"
 {% elif s.type == 'smp' %}
@@ -143,11 +146,14 @@ services:
       VIEW_DISTANCE: "10"
       SIMULATION_DISTANCE: "8"
 {% else %}
+      # Mini-jeux : aucun mob ne vient tout seul, mais /summon marche (difficulté normale :
+      # les monstres invoqués restent et attaquent).
       MODE: adventure
       DIFFICULTY: normal
       LEVEL_TYPE: FLAT
       GENERATE_STRUCTURES: "false"
-      SPAWN_MONSTERS: "false"
+      SPAWN_ANIMALS: "false"
+      SPAWN_NPCS: "false"
       ALLOW_NETHER: "false"
       VIEW_DISTANCE: "8"
 {% endif %}

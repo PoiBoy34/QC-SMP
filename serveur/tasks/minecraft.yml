@@ -474,16 +474,94 @@
   when: item.changed | default(false)
   changed_when: true
 
-- name: Lobby — attendre qu'il réponde
+- name: Serveurs Paper — attendre qu'ils répondent
   ansible.builtin.command: docker exec mc-{{ item.nom }} rcon-cli list
-  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'spawn') }}"
+  loop: "{{ serveurs_paper }}"
   loop_control:
     label: "{{ item.nom }}"
-  register: lobby_pret
-  until: lobby_pret.rc == 0
+  register: paper_pret
+  until: paper_pret.rc == 0
   retries: 30
   delay: 10
   changed_when: false
+
+# Le datapack des menus (bouton LQDM du menu Échap, /menu, boussole) doit être ACTIVÉ dans le
+# monde. Un monde qui l'a vu passer une fois en « désactivé » le garde désactivé : on le
+# réactive, puis on redémarre (les menus ne se chargent qu'au démarrage).
+- name: Menus — datapack actif ?
+  ansible.builtin.command: docker exec mc-{{ item.nom }} rcon-cli "datapack list enabled"
+  loop: "{{ serveurs_paper }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  register: datapack_actifs
+  changed_when: false
+  when: contenu_datapack.results | length > 0
+
+- name: Menus — activer le datapack
+  ansible.builtin.command:
+    argv: [docker, exec, "mc-{{ item.item.nom }}", rcon-cli, 'datapack enable "file/LQDM-Menus.zip"']
+  loop: "{{ datapack_actifs.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.nom }}"
+  when: item.stdout is defined and 'LQDM-Menus' not in item.stdout
+  register: datapack_active
+
+- name: Menus — redémarrer pour charger les menus
+  ansible.builtin.command: docker compose restart {{ item.item.item.nom }}
+  args:
+    chdir: "{{ base }}"
+  loop: "{{ datapack_active.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.item.nom | default('') }}"
+  when: item.changed | default(false)
+  changed_when: true
+
+- name: Menus — attendre les serveurs redémarrés
+  ansible.builtin.command: docker exec mc-{{ item.item.item.nom }} rcon-cli list
+  loop: "{{ datapack_active.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.item.nom | default('') }}"
+  when: item.changed | default(false)
+  register: menus_pret
+  until: menus_pret.rc == 0
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Menus — état final
+  ansible.builtin.command: docker exec mc-{{ item.nom }} rcon-cli "datapack list enabled"
+  loop: "{{ serveurs_paper }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  register: datapack_final
+  changed_when: false
+
+# Spawn et mini-jeux : aucun mob n'apparaît tout seul. /summon marche toujours (mini-jeux).
+# Les règles ont changé de nom en 1.21.11 (doMobSpawning → spawn_mobs…) : on envoie les deux,
+# le serveur ignore celle qu'il ne connaît pas.
+- name: Mobs — pas de spawn naturel au spawn et dans les mini-jeux
+  ansible.builtin.shell: |
+    for regle in spawn_mobs spawn_patrols spawn_wandering_traders spawn_phantoms \
+                 doMobSpawning doPatrolSpawning doTraderSpawning doInsomnia; do
+      docker exec mc-{{ item.nom }} rcon-cli "gamerule $regle false" >/dev/null 2>&1 || true
+    done
+  loop: "{{ serveurs_paper | rejectattr('type', 'equalto', 'smp') }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  changed_when: false
+
+# Une seule fois : les animaux nés avec le monde plat s'en vont (les décorations restent).
+- name: Mobs — retirer ceux qui sont déjà au spawn (une fois)
+  ansible.builtin.shell: >-
+    docker exec mc-{{ item.nom }} rcon-cli
+    "kill @e[type=!player,type=!armor_stand,type=!item_frame,type=!glow_item_frame,type=!painting,type=!item_display,type=!block_display,type=!text_display,type=!interaction,type=!marker,type=!item,type=!minecart,type=!leash_knot]"
+    && touch {{ base }}/serveurs/{{ item.nom }}/.mobs-retires
+  args:
+    creates: "{{ base }}/serveurs/{{ item.nom }}/.mobs-retires"
+  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'spawn') }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  failed_when: false
 
 # Un lobby petit : bordure carrée centrée sur 0,0 (taille_lobby dans config.yml)
 - name: Lobby — taille du monde
@@ -622,6 +700,8 @@
       - "HTTPS NetherNet : {{ 'actif (' ~ domaine ~ ')' if https_actif | bool else 'NON (les consoles verront « faire confiance ? »)' }}"
       - "Transport Geyser : {{ geyser_transport }}   Adresses NetherNet annoncées : {{ ip_publique.stdout }}, {{ vm_ip }}"
       - "Liste blanche : {{ 'active (./outils.sh whitelist <pseudo>)' if liste_blanche | bool else 'désactivée, le serveur est ouvert à tous' }}"
+      - >-
+        Menus LQDM (datapack) : {% for r in datapack_final.results %}{{ r.item.nom }} {{ 'OK' if 'LQDM-Menus' in r.stdout else 'ABSENT (voir ./outils.sh erreurs ' ~ r.item.nom ~ ')' }}{{ ', ' if not loop.last }}{% endfor %}
       - "Discord : {{ 'tchat relié au salon ' ~ discord_salon if discord_actif | bool else 'pas de pont (discord_token et discord_salon vides)' }}"
       - "À rediriger sur le routeur vers {{ vm_ip }} : {{ ports_publics | join(', ') }}"
       - "NetherNet : {{ nethernet.stdout_lines | default(['(lancer ./outils.sh nethernet)']) | join(' | ') }}"

@@ -24,3 +24,18 @@ command /smp:
 	description: Aller sur le serveur de survie
 	trigger:
 		connect player to proxy server "smp"
+
+# Un endroit où l'on tient debout près de l : on monte depuis le bloc de l jusqu'à trouver
+# deux blocs d'air (pieds et tête), au centre du bloc. Évite de se retrouver dans le sol.
+function lieuSur(l: location) :: location:
+	set {_x} to floor(x-coordinate of {_l}) + 0.5
+	set {_y} to floor(y-coordinate of {_l})
+	set {_z} to floor(z-coordinate of {_l}) + 0.5
+	loop 128 times:
+		set {_pieds} to location({_x}, {_y}, {_z}, world of {_l}, yaw of {_l}, pitch of {_l})
+		set {_tete} to location({_x}, {_y} + 1, {_z}, world of {_l})
+		if block at {_pieds} is air:
+			if block at {_tete} is air:
+				return {_pieds}
+		add 1 to {_y}
+	return {_l}

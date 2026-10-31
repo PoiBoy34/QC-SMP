@@ -22,6 +22,8 @@ Usage : ./outils.sh <commande>
   whitelist <pseudo>       autorise un joueur sur tout le réseau
                            Java : JosephMC     Bedrock : .Gamertag (avec le point de Floodgate)
   donner <joueur> <item> [n]  donne un item custom de contenu/items (ex. poutine)
+  erreurs <serveur>        erreurs récentes de Skript et du datapack des menus (à m'envoyer)
+  panneau                  adresse et mot de passe du panneau de contrôle web
   nethernet                état NetherNet de Geyser (adresses annoncées, signalisation)
   verifier                 le serveur vu d'Internet (comme le site) : DNS, Java, Bedrock
   xbox                     dernier code de connexion du compte Xbox (MCXboxBroadcast)
@@ -48,6 +50,15 @@ case "${1:-}" in
     vm_tty "docker exec -it mc-$2 rcon-cli" ;;
   cmd)
     cmd "${2:?serveur ?}" "${3:?commande ?}" ;;
+  erreurs)
+    s="${2:?serveur ? (spawn, smp, minijeu1…)}"
+    info "Datapacks actifs sur $s"
+    cmd "$s" "datapack list enabled" || true
+    info "Erreurs Skript et menus dans le journal de $s (les plus récentes en bas)"
+    vm "docker logs --tail 3000 mc-$s 2>&1 | sed 's/\x1b\[[0-9;]*m//g' \
+        | grep -iE -A8 'lqdm|skript.*(error|erreur)|data ?pack|dialog' | tail -120" || true ;;
+  panneau)
+    vm "sudo cat /opt/lqdm-panneau/acces.txt" ;;
   whitelist)
     pseudo="${2:?pseudo ?}"
     if [[ $pseudo == .* ]]; then
