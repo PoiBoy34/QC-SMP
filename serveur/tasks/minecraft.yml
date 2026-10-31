@@ -440,6 +440,61 @@
     label: "{{ item.item.nom }}"
   when: item.changed
 
+# --- Lobby (serveur spawn) ---------------------------------------------------------
+# WorldEdit prend la boussole comme outil de navigation (clic droit = traverser les murs,
+# pour les op) et annule le clic : le menu LQDM ne s'ouvrait pas. On lui donne un autre item.
+- name: Lobby — attendre la config de WorldEdit (FAWE)
+  ansible.builtin.wait_for:
+    path: "{{ base }}/serveurs/{{ item.nom }}/plugins/FastAsyncWorldEdit/worldedit-config.yml"
+    timeout: 300
+  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'spawn') }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  register: fawe_config
+  failed_when: false
+
+- name: Lobby — la boussole sert au menu LQDM, pas à WorldEdit
+  ansible.builtin.replace:
+    path: "{{ base }}/serveurs/{{ item.item.nom }}/plugins/FastAsyncWorldEdit/worldedit-config.yml"
+    regexp: '(navigation-wand:\n(?:[ \t]*#.*\n)*[ \t]*item:)[ \t]*\S+'
+    replace: '\g<1> minecraft:structure_void'
+  loop: "{{ fawe_config.results }}"
+  loop_control:
+    label: "{{ item.item.nom }}"
+  when: item.state | default('') == 'file'
+  register: fawe_boussole
+
+- name: Lobby — redémarrer pour appliquer
+  ansible.builtin.command: docker compose restart {{ item.item.item.nom }}
+  args:
+    chdir: "{{ base }}"
+  loop: "{{ fawe_boussole.results }}"
+  loop_control:
+    label: "{{ item.item.item.nom | default('') }}"
+  when: item.changed | default(false)
+  changed_when: true
+
+- name: Lobby — attendre qu'il réponde
+  ansible.builtin.command: docker exec mc-{{ item.nom }} rcon-cli list
+  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'spawn') }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  register: lobby_pret
+  until: lobby_pret.rc == 0
+  retries: 30
+  delay: 10
+  changed_when: false
+
+# Un lobby petit : bordure carrée centrée sur 0,0 (taille_lobby dans config.yml)
+- name: Lobby — taille du monde
+  ansible.builtin.shell: >-
+    docker exec mc-{{ item.nom }} rcon-cli worldborder center 0 0 &&
+    docker exec mc-{{ item.nom }} rcon-cli worldborder set {{ taille_lobby | int }}
+  loop: "{{ serveurs_paper | selectattr('type', 'equalto', 'spawn') }}"
+  loop_control:
+    label: "{{ item.nom }} : {{ taille_lobby }} blocs"
+  changed_when: false
+
 - name: MCXboxBroadcast — réglages réseau
   when: xbox_broadcast | bool
   block:

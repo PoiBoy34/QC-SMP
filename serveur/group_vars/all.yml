@@ -5,6 +5,7 @@ cloudflare_api_token: ""     # défini dans secrets.yml
 tailscale_authkey: ""        # défini dans secrets.yml (facultatif)
 tailscale: false
 liste_blanche: true
+taille_lobby: 300
 xbox_retirer_amis_inactifs: false
 discord_token: ""            # défini dans secrets.yml (facultatif)
 discord_salon: ""

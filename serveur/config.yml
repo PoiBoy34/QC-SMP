@@ -81,6 +81,10 @@ liste_blanche: false
 # Pseudos Java qui seront op (et ajoutés à la liste blanche). Ex. ["JosephMC"]
 admins_java: []
 
+# Le lobby (serveur spawn, monde plat) : largeur de sa bordure, en blocs, centrée sur 0,0.
+# Les joueurs y sont en aventure ; pour construire : ./outils.sh cmd spawn "gamemode creative TonPseudo"
+taille_lobby: 300
+
 # Mémoire Java de chaque serveur
 ram_proxy: "1536M"
 ram_spawn: "1536M"
