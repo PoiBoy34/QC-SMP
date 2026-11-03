@@ -196,8 +196,8 @@ jamais.
 
 Le plugin [VelocityDiscord](https://github.com/fooooooooooooooo/VelocityDiscord), sur le proxy,
 relie le tchat de **tous** les serveurs (Java et consoles) à un salon Discord, dans les deux
-sens. Les arrivées et départs s'affichent aussi, en français, et la commande `/list` de Discord
-dit qui est en ligne. Il s'installe dès que `discord_token` (secrets.yml) et `discord_salon`
+sens. Seuls les messages des joueurs passent (pas d'arrivées, départs, morts ni progrès), et la
+commande `/list` de Discord dit qui est en ligne. Il s'installe dès que `discord_token` (secrets.yml) et `discord_salon`
 (config.yml) sont remplis.
 
 1. https://discord.com/developers/applications → **New Application** (par ex. « LQDM »).
@@ -210,7 +210,10 @@ dit qui est en ligne. Il s'installe dès que `discord_token` (secrets.yml) et `d
 4. Crée un salon (par ex. `#tchat-minecraft`). Dans Discord : Paramètres → Avancés → **Mode
    développeur**, puis clic droit sur le salon → **Copier l'identifiant** → `discord_salon`
    dans `config.yml`.
-5. `./deploy.sh --tags serveur`.
+5. Facultatif, mais plus joli : salon → **Modifier le salon → Intégrations → Webhooks →
+   Nouveau webhook → Copier l'URL du webhook**, dans `discord_webhook` de `secrets.yml`. Chaque
+   message s'affiche alors sous le nom et la tête du skin du joueur.
+6. `./deploy.sh --tags serveur`.
 
 Le tchat en jeu reste séparé par serveur (spawn, SMP, mini-jeux) : seul le salon Discord voit
 tout. Pour gérer la liste blanche depuis Discord, il faudra un petit bot de plus : à faire le

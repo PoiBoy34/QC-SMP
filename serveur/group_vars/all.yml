@@ -9,6 +9,7 @@ taille_lobby: 300
 xbox_retirer_amis_inactifs: false
 discord_token: ""            # défini dans secrets.yml (facultatif)
 discord_salon: ""
+discord_webhook: ""          # défini dans secrets.yml (facultatif) : messages sous le nom et la tête du joueur
 discord_actif: "{{ (discord_token | length > 0) and (discord_salon | string | length > 0) }}"
 panneau: false
 panneau_port: 8443

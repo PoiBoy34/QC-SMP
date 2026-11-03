@@ -99,9 +99,12 @@ player_list_separator = ", "
 # Set to 0 to show all players
 player_list_max_count = 10
 
+{% set webhook_ok = discord_webhook | default('') is match('^https://(ptb\\.|canary\\.)?discord(app)?\\.com/api/webhooks/') %}
 [discord.webhook]
 # Full webhook URL to send chat messages to
-url = ""
+# LQDM : discord_webhook dans secrets.yml. Avec lui, chaque message s'affiche sous le nom
+# et la tête du skin du joueur, comme s'il écrivait lui-même dans Discord.
+url = "{{ discord_webhook if webhook_ok else '' }}"
 # Full URL of an avatar service to get the player's avatar from
 # Placeholders available: {uuid}, {username}
 avatar_url = "https://visage.surgeplay.com/face/96/{uuid}"
@@ -124,7 +127,7 @@ username = "{username}"
 [discord.chat.message]
 # Placeholders available: {username}, {prefix}, {server}, {message}
 # Can be disabled with "" or false
-format = "**{username}** : {message}"
+format = "**{username}** · {message}"
 
 # for user messages, the following types can be used
 # "text"    - Normal text only message with the above
@@ -134,7 +137,7 @@ format = "**{username}** : {message}"
 #             Ignores the above message format, and just sends the message as the content of the webhook
 #
 # "embed"   - Discord embed with the above format as the description field
-type = "text"
+type = "{{ 'webhook' if webhook_ok else 'text' }}"
 # Can be disabled with "" or false
 embed_color = ""
 # Channel override for this message type, set to "" or false or remove to use the default channel
@@ -144,7 +147,7 @@ embed_color = ""
 [discord.chat.join]
 # Placeholders available: {username}, {prefix}, {server}
 # Can be disabled with "" or false
-format = "**{username} a rejoint le serveur**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#40bf4f"
@@ -152,7 +155,7 @@ embed_color = "#40bf4f"
 [discord.chat.leave]
 # Placeholders available: {username}, {prefix}, {server}
 # Can be disabled with "" or false
-format = "**{username} a quitté le serveur**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#bf4040"
@@ -161,7 +164,7 @@ embed_color = "#bf4040"
 # Possible different format for timeouts or other terminating connections
 # Placeholders available: {username}, {prefix}
 # Can be disabled with "" or false
-format = "**{username} s'est déconnecté**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#bf4040"
@@ -169,7 +172,7 @@ embed_color = "#bf4040"
 [discord.chat.server_switch]
 # Placeholders available: {username}, {prefix}, {current}, {previous}
 # Can be disabled with "" or false
-format = "**{username} est passé de {previous} à {current}**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#40bf4f"
@@ -178,7 +181,7 @@ embed_color = "#40bf4f"
 # Placeholders available: {username}, {death_message}
 # death_message includes the username just as it is shown ingame
 # Can be disabled with "" or false
-format = "**{death_message}**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#bf4040"
@@ -186,7 +189,7 @@ embed_color = "#bf4040"
 [discord.chat.advancement]
 # Placeholders available: {username}, {advancement_title}, {advancement_description}
 # Can be disabled with "" or false
-format = "**{username} a obtenu le progrès __{advancement_title}__**\n_{advancement_description}_"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#40bf4f"
@@ -194,7 +197,7 @@ embed_color = "#40bf4f"
 # Not server overridable
 [discord.chat.proxy_start]
 # Can be disabled with "" or false
-format = "**Le serveur LQDM est en ligne**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#40bf4f"
@@ -202,7 +205,7 @@ embed_color = "#40bf4f"
 # Not server overridable
 [discord.chat.proxy_stop]
 # Can be disabled with "" or false
-format = "**Le serveur LQDM s'arrête**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#bf4040"
@@ -210,7 +213,7 @@ embed_color = "#bf4040"
 [discord.chat.server_start]
 # Placeholders available: {server}
 # Can be disabled with "" or false
-format = "**{server} est en ligne**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#40bf4f"
@@ -218,7 +221,7 @@ embed_color = "#40bf4f"
 [discord.chat.server_stop]
 # Placeholders available: {server}
 # Can be disabled with "" or false
-format = "**{server} s'est arrêté**"
+format = false   # LQDM : seulement les messages des joueurs
 type = "text"
 # Can be disabled with "" or false
 embed_color = "#bf4040"
